@@ -1,18 +1,46 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IVendor } from './vendor.interface';
 import { Vendor } from './vendor.model';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import { User } from '../user/user.model';
+import mongoose from 'mongoose';
 
 const createVendor = async (
   vendorData: IVendor,
   user: any,
 ): Promise<IVendor> => {
-  const vendor = await Vendor.create({
-    ...vendorData,
-    user: user._id,
-  });
-  return vendor;
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const vendor = await Vendor.create(
+      [
+        {
+          ...vendorData,
+          user: user._id,
+        },
+      ],
+      { session },
+    );
+
+    await User.findByIdAndUpdate(
+      user._id,
+      { vendorId: vendor[0]._id },
+      { session },
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return vendor[0];
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error(error);
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Server error');
+  }
 };
 
 const getAllVendors = async (): Promise<IVendor[]> => {

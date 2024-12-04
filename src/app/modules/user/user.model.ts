@@ -44,6 +44,10 @@ const userSchema = new Schema<IUser, UserModel>(
       type: [Schema.Types.ObjectId],
       ref: 'Vendor',
     },
+    vendor: {
+      type: Schema.Types.ObjectId,
+      ref: 'Vendor',
+    },
   },
   {
     timestamps: true,

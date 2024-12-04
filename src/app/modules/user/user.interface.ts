@@ -14,6 +14,7 @@ export interface IUser {
   status: 'active' | 'diactive' | 'blocked';
   isDeleted: boolean;
   followedVendors: Types.ObjectId[];
+  vendor: Types.ObjectId;
 }
 
 export interface UserModel extends Model<IUser> {

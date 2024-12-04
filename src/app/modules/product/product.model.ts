@@ -65,6 +65,10 @@ const productSchema = new Schema<IProduct>(
       type: Boolean,
       default: false,
     },
+    isPublished: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

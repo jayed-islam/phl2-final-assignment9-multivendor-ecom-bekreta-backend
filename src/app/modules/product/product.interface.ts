@@ -14,4 +14,5 @@ export interface IProduct extends Document {
   rating: number;
   vendor: Types.ObjectId;
   isOnSale: boolean;
+  isPublished: boolean;
 }
