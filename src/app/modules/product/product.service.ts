@@ -249,6 +249,55 @@ const softDeleteProduct = async (id: string) => {
   return product;
 };
 
+const duplicateProduct = async (id: string, user: any) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const existingProduct = await Product.findById(id).session(session);
+    if (!existingProduct) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+    }
+
+    if (
+      existingProduct.vendor.toString() !== user._id.toString() &&
+      user.role !== 'admin'
+    ) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        'You are not allowed to duplicate this product',
+      );
+    }
+
+    // Create a new product by copying details from the existing product
+    const newProductData = {
+      ...existingProduct.toObject(),
+      name: `${existingProduct.name} - Copy`,
+      vendor: existingProduct.vendor,
+      reviews: [],
+      createdAt: undefined,
+      updatedAt: undefined,
+    };
+
+    delete newProductData._id;
+
+    // Create the duplicated product
+    const duplicatedProduct = await Product.create([newProductData], {
+      session,
+    });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return duplicatedProduct[0];
+  } catch (error) {
+    await session.abortTransaction(); // Rollback on error
+    session.endSession();
+    console.error(error);
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Server error');
+  }
+};
+
 export const ProductServices = {
   createProduct,
   getProductsByCategoryIntoDB,
@@ -257,4 +306,5 @@ export const ProductServices = {
   updateProduct,
   softDeleteProduct,
   getProductListForAdmin,
+  duplicateProduct,
 };
