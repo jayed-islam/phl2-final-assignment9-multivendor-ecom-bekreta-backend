@@ -18,7 +18,9 @@ const createReview = async (
   return review;
 };
 
-const getAllReviews = async (productId: string): Promise<IReview[]> => {
+const getAllReviewsByProductId = async (
+  productId: string,
+): Promise<IReview[]> => {
   const query = productId ? { product: productId } : {};
   const reviews = await Review.find(query).populate('customer', 'name email');
   return reviews;
@@ -46,7 +48,7 @@ const deleteReview = async (reviewId: string): Promise<void> => {
 
 export const ReviewServices = {
   createReview,
-  getAllReviews,
+  getAllReviewsByProductId,
   deleteReview,
   getAllVendorReviews,
 };
