@@ -3,25 +3,26 @@ import { AuthRoutes } from '../modules/Auth/auth.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { CategoryRoutes } from '../modules/category/category.routes';
 import { PaymentRoutes } from '../modules/payment/payment.routes';
+import { VendorRoutes } from '../modules/vendor/vendor.routes';
 
 const router = Router();
 
 const modulesRoutes = [
   {
-    path: '/user',
-    route: UserRoutes,
-  },
-  {
     path: '/auth',
     route: AuthRoutes,
+  },
+  {
+    path: '/user',
+    route: UserRoutes,
   },
   {
     path: '/category',
     route: CategoryRoutes,
   },
   {
-    path: '/user',
-    route: UserRoutes,
+    path: '/vendor',
+    route: VendorRoutes,
   },
   {
     path: '/payment',

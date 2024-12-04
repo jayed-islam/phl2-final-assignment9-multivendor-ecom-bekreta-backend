@@ -13,7 +13,7 @@ router.post('/fail', PaymentController.FailPayment);
 
 router.post(
   '/make-payment',
-  auth(USER_ROLE.customer, USER_ROLE.admin, USER_ROLE.seller),
+  auth(USER_ROLE.customer, USER_ROLE.admin, USER_ROLE.vendor),
   validateRequest(PaymentValidation.paymentValidation),
   PaymentController.MakePayemnt,
 );

@@ -8,19 +8,19 @@ const router = express.Router();
 
 router.get(
   '/me',
-  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.seller),
+  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.vendor),
   UserController.getCurrentUser,
 );
 
 router.get(
   '/single-user/:id',
-  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.seller),
+  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.vendor),
   UserController.getSingleUser,
 );
 
 router.put(
   '/me/update/:id',
-  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.seller),
+  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.vendor),
   UserController.updateUserData,
 );
 
@@ -32,7 +32,7 @@ router.put(
 
 router.put(
   '/me/update/profile-picture/:id',
-  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.seller),
+  auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.vendor),
   multerUpload.single('file'),
   UserController.updateUserProfilePicture,
 );

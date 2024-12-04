@@ -1,6 +1,7 @@
 export type TAuthUser = {
   email: string;
   password: string;
+  role: 'customer' | 'vendor';
 };
 
 export type TAuthAdmin = {
@@ -12,5 +13,5 @@ export type TAuthAdmin = {
 export const USER_ROLE = {
   customer: 'customer',
   admin: 'admin',
-  seller: 'seller',
+  vendor: 'vendor',
 } as const;

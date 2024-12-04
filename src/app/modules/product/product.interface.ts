@@ -4,8 +4,9 @@ export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
-  stock: number;
+  inventoryCount: number;
   category: Types.ObjectId;
+  reviews: Types.ObjectId[];
   qualities: string[];
   images: string[];
   isFeatured: boolean;

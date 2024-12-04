@@ -7,8 +7,9 @@ import { CategoryServices } from './category.service';
 
 const createCategory = catchAsync(async (req: Request, res: Response) => {
   const categoryData = req.body;
+  const file = req.file;
 
-  const newCategory = await CategoryServices.createCategory(categoryData);
+  const newCategory = await CategoryServices.createCategory(categoryData, file);
 
   sendResponse(res, {
     statusCode: httpStatus.CREATED,

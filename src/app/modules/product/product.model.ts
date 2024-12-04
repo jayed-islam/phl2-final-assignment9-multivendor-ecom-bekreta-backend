@@ -18,7 +18,7 @@ const productSchema = new Schema<IProduct>(
       required: true,
       min: 0,
     },
-    stock: {
+    inventoryCount: {
       type: Number,
       required: true,
       min: 0,
@@ -56,6 +56,10 @@ const productSchema = new Schema<IProduct>(
       type: Schema.Types.ObjectId,
       ref: 'Vendor',
       required: true,
+    },
+    reviews: {
+      type: [Schema.Types.ObjectId],
+      ref: 'Review',
     },
     isOnSale: {
       type: Boolean,

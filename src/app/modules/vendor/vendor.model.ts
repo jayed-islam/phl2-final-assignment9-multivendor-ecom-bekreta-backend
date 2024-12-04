@@ -16,6 +16,10 @@ const vendorSchema = new Schema<IVendor>(
       type: String,
       required: true,
     },
+    contactPhone: {
+      type: String,
+      required: true,
+    },
     logo: {
       type: String,
     },
@@ -32,6 +36,16 @@ const vendorSchema = new Schema<IVendor>(
     },
     isBlacklisted: {
       type: Boolean,
+    },
+    isVerified: {
+      type: Boolean,
+      default: true,
+    },
+    totalSales: {
+      type: Number,
+    },
+    rating: {
+      type: Number,
     },
   },
   {

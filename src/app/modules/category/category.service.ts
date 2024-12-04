@@ -5,21 +5,32 @@ import { ICategory } from './category.interface';
 import { Category } from './category.model';
 
 // Create a new category
-const createCategory = async (categoryData: ICategory): Promise<ICategory> => {
+const createCategory = async (
+  categoryData: ICategory,
+  file: any,
+): Promise<ICategory> => {
+  if (!file || !file.path) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'A valid image file is required.',
+    );
+  }
   try {
-    // Check if the category name already exists
     const existingCategory = await Category.findOne({
-      name: categoryData.name,
+      $or: [{ name: categoryData.name }, { slug: categoryData.slug }],
     });
 
     if (existingCategory) {
       throw new AppError(
         httpStatus.CONFLICT,
-        'Category with this name already exists',
+        'A category with this name or slug already exists.',
       );
     }
 
-    const category = await Category.create(categoryData);
+    const category = await Category.create({
+      ...categoryData,
+      image: file.path,
+    });
     return category;
   } catch (error) {
     // eslint-disable-next-line no-console

@@ -21,7 +21,7 @@ router.post(
 
 router.post(
   '/change-password',
-  auth(USER_ROLE.customer, USER_ROLE.seller),
+  auth(USER_ROLE.customer, USER_ROLE.vendor),
   validateRequest(AuthValidation.changePasswordValidationSchema),
   AuthControllers.changePassword,
 );
@@ -43,7 +43,5 @@ router.post(
   validateRequest(AuthValidation.resetPasswordValidationSchema),
   AuthControllers.resetPassword,
 );
-
-// router.get('/verify-email', AuthControllers.verifyEmail);
 
 export const AuthRoutes = router;

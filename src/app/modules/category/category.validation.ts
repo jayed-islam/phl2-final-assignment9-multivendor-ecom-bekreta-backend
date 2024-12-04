@@ -7,10 +7,7 @@ const createCategorySchema = z.object({
       .string()
       .min(1, { message: 'Category name is required' })
       .max(100, { message: 'Category name must be less than 100 characters' }),
-    description: z
-      .string()
-      .max(500, { message: 'Description must be less than 500 characters' })
-      .optional(),
+    slug: z.string({ required_error: 'Slug is required' }).nonempty(),
   }),
 });
 
@@ -21,10 +18,6 @@ const updateCategorySchema = z.object({
       .string()
       .min(1, { message: 'Category name is required' })
       .max(100, { message: 'Category name must be less than 100 characters' })
-      .optional(),
-    description: z
-      .string()
-      .max(500, { message: 'Description must be less than 500 characters' })
       .optional(),
   }),
 });

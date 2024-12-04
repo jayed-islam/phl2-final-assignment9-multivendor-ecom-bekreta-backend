@@ -20,7 +20,7 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     role: {
       type: String,
-      enum: [USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.seller],
+      enum: [USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.vendor],
       default: USER_ROLE.customer,
     },
     name: {
