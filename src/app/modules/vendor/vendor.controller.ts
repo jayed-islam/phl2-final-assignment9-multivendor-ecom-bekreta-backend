@@ -87,6 +87,20 @@ const deleteVendor = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateVendorLogo = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.params.id;
+  const file = req.file;
+
+  const updatedVendor = await VendorServices.updateVendorLogo(file, vendorId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Vendor logo updated successfully!',
+    data: updatedVendor,
+  });
+});
+
 export const VendorControllers = {
   createVendor,
   getAllVendors,
@@ -94,4 +108,5 @@ export const VendorControllers = {
   updateVendor,
   deleteVendor,
   toggleBlockVendor,
+  updateVendorLogo,
 };

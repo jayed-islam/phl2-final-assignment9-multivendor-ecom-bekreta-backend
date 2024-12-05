@@ -60,7 +60,19 @@ const updateVendor = async (
   updateData: Partial<IVendor>,
   user: any,
 ): Promise<IVendor | null> => {
-  if (user.role !== 'admin' && user._id.toString() !== vendorId) {
+  console.log('user', user);
+  const userRes = await User.findById(user._id).populate('vendor');
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  console.log('dd', userRes);
+
+  // Check if the user is authorized to update this vendor
+  if (
+    userRes?.role !== 'admin' &&
+    (!userRes?.vendor || userRes?.vendor._id.toString() !== vendorId)
+  ) {
     throw new AppError(
       httpStatus.FORBIDDEN,
       'You are not authorized to update this vendor',
@@ -97,6 +109,27 @@ const toggleBlockVendor = async (vendorId: string): Promise<IVendor | null> => {
   return vendor;
 };
 
+const updateVendorLogo = async (file: any, vendorId: string) => {
+  if (!file || !file.path) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'A valid image file is required.',
+    );
+  }
+  try {
+    const vendor = await Vendor.findByIdAndUpdate(
+      vendorId,
+      {
+        logo: file.path,
+      },
+      { new: true },
+    );
+    return vendor;
+  } catch (error) {
+    throw new AppError(httpStatus.CONFLICT, 'Server error');
+  }
+};
+
 export const VendorServices = {
   createVendor,
   getAllVendors,
@@ -104,4 +137,5 @@ export const VendorServices = {
   updateVendor,
   deleteVendor,
   toggleBlockVendor,
+  updateVendorLogo,
 };

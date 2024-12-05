@@ -10,15 +10,15 @@ const vendorSchema = new Schema<IVendor>(
     },
     shopName: {
       type: String,
-      required: true,
+    },
+    email: {
+      type: String,
     },
     address: {
       type: String,
-      required: true,
     },
     contactPhone: {
       type: String,
-      required: true,
     },
     logo: {
       type: String,

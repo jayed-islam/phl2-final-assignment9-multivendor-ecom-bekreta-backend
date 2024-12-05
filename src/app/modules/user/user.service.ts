@@ -98,16 +98,11 @@ const getAllUsers = async () => {
 const getUserProfile = async (userId: string): Promise<any> => {
   const user = await User.findById(userId)
     .populate({
-      path: 'followers',
-      select: '-password',
+      path: 'followedVendors',
+      select: 'shopName address',
     })
     .populate({
-      path: 'following',
-      select: '-password',
-    })
-    .populate({
-      path: 'purchasedPosts',
-      populate: [{ path: 'author', select: '-password' }, { path: 'category' }],
+      path: 'vendor',
     })
     .sort({ createdAt: -1 })
     .exec();

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { TAuthUser } from '../user/user.constants';
@@ -8,6 +9,8 @@ import { createToken } from './auth-utils';
 import { User } from '../user/user.model';
 import bcrypt from 'bcrypt';
 import { sendEmail } from '../../utils/sendEmail';
+import mongoose from 'mongoose';
+import { Vendor } from '../vendor/vendor.model';
 
 const registerUserIntoDB = async ({ email, password, role }: TAuthUser) => {
   const existingUser = await User.isUserExistsByEmail(email);
@@ -15,10 +18,36 @@ const registerUserIntoDB = async ({ email, password, role }: TAuthUser) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'User already exists');
   }
 
-  const newUser = new User({ email, password, role });
-  const result = await newUser.save();
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  return result;
+  try {
+    // Create the new user
+    const newUser = new User({ email, password, role });
+    const savedUser = await newUser.save({ session });
+
+    let vendorProfile;
+    if (role === 'vendor') {
+      vendorProfile = new Vendor({
+        user: savedUser._id,
+        email: savedUser.email,
+      });
+
+      const savedVendor = await vendorProfile.save({ session });
+
+      savedUser.vendor = savedVendor._id as any;
+      await savedUser.save({ session });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return savedUser;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Registration failed');
+  }
 };
 
 const loginUserFromDB = async ({ email, password }: TAuthUser) => {
