@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
@@ -134,6 +136,18 @@ const softDeleteProduct = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Product deleted Successfully!',
+    data: null,
+  });
+});
+
+const makeDuplicate = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const product = await ProductServices.duplicateProduct(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product duplicated Successfully!',
     data: product,
   });
 });
@@ -146,4 +160,5 @@ export const ProductController = {
   softDeleteProduct,
   getProductByCategory,
   getProductListForAdmin,
+  makeDuplicate,
 };

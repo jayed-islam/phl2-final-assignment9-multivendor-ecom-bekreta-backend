@@ -45,22 +45,28 @@ router.get(
 
 router.post(
   '/get-product-list',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
   validateRequest(ProductValidation.getProductListValidation),
   ProductController.getProductListForAdmin,
 );
 
 router.put(
   '/:id',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
   validateRequest(ProductValidation.updateProductValidationSchema),
   ProductController.updateSingleProduct,
 );
 
 router.put(
   '/delete/:id',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
   ProductController.softDeleteProduct,
+);
+
+router.put(
+  '/duplicate/:id',
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
+  ProductController.makeDuplicate,
 );
 
 export const ProductRoutes = router;

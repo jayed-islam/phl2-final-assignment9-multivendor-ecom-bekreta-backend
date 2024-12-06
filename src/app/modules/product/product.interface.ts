@@ -10,6 +10,7 @@ export interface IProduct extends Document {
   qualities: string[];
   images: string[];
   isFeatured: boolean;
+  isDeleted: boolean;
   discount?: number;
   rating: number;
   vendor: Types.ObjectId;

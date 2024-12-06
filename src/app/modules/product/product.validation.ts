@@ -4,36 +4,33 @@ const productSchema = z.object({
   body: z.object({
     name: z
       .string({ required_error: 'Name is required' })
-      .min(5, { message: 'Name is required' })
+      .min(1, { message: 'Name must be at least 1 character long' })
       .trim(),
-    slug: z
-      .string({ required_error: 'Slug is required' })
-      .min(5, { message: 'Slug at least 5 long' })
+    description: z
+      .string({ required_error: 'Description is required' })
+      .min(1, { message: 'Description must be at least 1 character long' })
       .trim(),
-    about: z
-      .string({ required_error: 'About is required' })
-      .min(5, { message: 'About is required' })
-      .trim(),
-    descriptions: z
-      .array(z.string({ required_error: 'Description is required' }))
-      .nonempty({ message: 'Descriptions are required' }),
     price: z
       .number({ required_error: 'Price is required' })
-      .min(0, { message: 'Price is required' }),
+      .min(0, { message: 'Price must be 0 or greater' }),
+    inventoryCount: z
+      .number({ required_error: 'Inventory count is required' })
+      .min(0, { message: 'Inventory count must be 0 or greater' }),
     category: z
       .string({ required_error: 'Category is required' })
-      .min(1, { message: 'Category is required' })
+      .min(1, { message: 'Category must not be empty' })
       .trim(),
-    stock: z
-      .number({ required_error: 'Stock is required' })
-      .min(0, { message: 'Stock is required' }),
-    // images: z.array(z.string()).nonempty({ message: 'Images are required' }),
-    specifications: z.array(z.string()),
-    // qualities: z.array(z.string()),
-    keywords: z.array(z.string()),
+    qualities: z.array(z.string().trim()).optional(),
+
+    images: z.array(z.string().trim()).optional(),
+    vendor: z
+      .string({ required_error: 'Vendor is required' })
+      .min(1, { message: 'Vendor must not be empty' })
+      .trim(),
+    isOnSale: z.boolean().optional(),
+    isPublished: z.boolean().optional(),
   }),
 });
-
 const updateProductValidationSchema = z.object({
   body: z.object({
     name: z
@@ -41,7 +38,7 @@ const updateProductValidationSchema = z.object({
       .min(1, { message: 'Name must be minimum 5 char. required' })
       .optional(),
     about: z.string().min(5, { message: 'About is required' }).optional(),
-    descriptions: z.array(z.string()).optional(),
+    description: z.string().optional(),
     price: z
       .number()
       .min(0, { message: 'Price is can not be minimum to 0' })

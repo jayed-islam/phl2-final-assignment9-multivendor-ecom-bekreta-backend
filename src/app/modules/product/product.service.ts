@@ -51,11 +51,14 @@ const createProduct = async (productData: IProduct, files: any[]) => {
     session.endSession();
 
     return newProduct[0];
-  } catch (error) {
+  } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
     console.error(error);
-    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Server error');
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error?.message || 'Server error',
+    );
   }
 };
 
@@ -64,7 +67,7 @@ const getProductsByCategoryIntoDB = async (category: string, limit: any) => {
     .limit(limit)
     .populate('category', 'name slug image')
     .populate('vendor')
-    .populate('review');
+    .populate('reviews');
   return products;
 };
 
@@ -111,14 +114,14 @@ export const getProductList = async (
       .limit(limit)
       .populate('category', 'name slug image')
       .populate('vendor')
-      .populate('review');
+      .populate('reviews');
   } else {
     productsPromise = Product.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('category', 'name slug image')
       .populate('vendor')
-      .populate('review');
+      .populate('reviews');
   }
 
   const [count, products] = await Promise.all([countPromise, productsPromise]);
@@ -146,7 +149,7 @@ const getProductListForAdmin = async (
 ) => {
   const query: Record<string, unknown> = {
     isDeleted: false,
-    ...(vendorId && { vendor: vendorId }),
+    ...(vendorId && { vendor: new mongoose.Types.ObjectId(vendorId) }),
   };
 
   // Filter by category
@@ -157,11 +160,7 @@ const getProductListForAdmin = async (
   // Filter by search term
   if (searchTerm) {
     const searchRegex = new RegExp(searchTerm, 'i');
-    query.$or = [
-      { name: searchRegex },
-      { about: searchRegex },
-      { keywords: { $in: [searchRegex] } },
-    ];
+    query.$or = [{ name: searchRegex }, { description: searchRegex }];
   }
 
   // Initialize the sorting options
@@ -178,6 +177,8 @@ const getProductListForAdmin = async (
     sortOptions.createdAt = -1;
   }
 
+  console.log('query', query);
+
   // Fetch count and products in parallel
   const countPromise = Product.countDocuments(query);
   const productsPromise = Product.find(query)
@@ -186,7 +187,7 @@ const getProductListForAdmin = async (
     .limit(limit)
     .populate('category', 'name slug image')
     .populate('vendor')
-    .populate('review');
+    .populate('reviews');
 
   const [count, products] = await Promise.all([countPromise, productsPromise]);
 
@@ -249,27 +250,14 @@ const softDeleteProduct = async (id: string) => {
   return product;
 };
 
-const duplicateProduct = async (id: string, user: any) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
+const duplicateProduct = async (id: string) => {
   try {
-    const existingProduct = await Product.findById(id).session(session);
+    const existingProduct = await Product.findById(id);
+
     if (!existingProduct) {
       throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
     }
 
-    if (
-      existingProduct.vendor.toString() !== user._id.toString() &&
-      user.role !== 'admin'
-    ) {
-      throw new AppError(
-        httpStatus.FORBIDDEN,
-        'You are not allowed to duplicate this product',
-      );
-    }
-
-    // Create a new product by copying details from the existing product
     const newProductData = {
       ...existingProduct.toObject(),
       name: `${existingProduct.name} - Copy`,
@@ -282,17 +270,10 @@ const duplicateProduct = async (id: string, user: any) => {
     delete newProductData._id;
 
     // Create the duplicated product
-    const duplicatedProduct = await Product.create([newProductData], {
-      session,
-    });
+    const duplicatedProduct = await Product.create(newProductData);
 
-    await session.commitTransaction();
-    session.endSession();
-
-    return duplicatedProduct[0];
+    return duplicatedProduct;
   } catch (error) {
-    await session.abortTransaction(); // Rollback on error
-    session.endSession();
     console.error(error);
     throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Server error');
   }
