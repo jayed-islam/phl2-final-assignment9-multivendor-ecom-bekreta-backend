@@ -48,7 +48,9 @@ const getAllVendors = async (): Promise<IVendor[]> => {
 };
 
 const getVendorById = async (vendorId: string): Promise<IVendor | null> => {
-  const vendor = await Vendor.findById(vendorId);
+  const vendor = await Vendor.findById(vendorId)
+    .populate('followers')
+    .populate('products');
   if (!vendor) {
     throw new AppError(httpStatus.NOT_FOUND, 'Vendor not found');
   }
@@ -109,6 +111,79 @@ const toggleBlockVendor = async (vendorId: string): Promise<IVendor | null> => {
   return vendor;
 };
 
+// const toggleFollowUnfollow = async (
+//   userId: any,
+//   vendorId: string,
+// ): Promise<IVendor | null> => {
+//   const vendor = await Vendor.findById(vendorId);
+//   if (!vendor) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'Vendor not found');
+//   }
+
+//   const isFollowing = vendor.followers.includes(userId);
+
+//   if (isFollowing) {
+//     vendor.followers = vendor.followers.filter(
+//       (id) => id.toString() !== userId,
+//     );
+//   } else {
+//     vendor.followers.push(userId);
+//   }
+
+//   await vendor.save();
+
+//   return vendor;
+// };
+
+const toggleFollowUnfollow = async (
+  userId: any,
+  vendorId: any,
+): Promise<IVendor | null> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const vendor = await Vendor.findById(vendorId).session(session);
+    if (!vendor) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Vendor not found');
+    }
+
+    const user = await User.findById(userId).session(session);
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+    }
+    const isFollowing = vendor.followers.includes(userId);
+
+    if (isFollowing) {
+      vendor.followers = vendor.followers.filter(
+        (id) => id.toString() !== userId,
+      );
+      user.followedVendors = user.followedVendors.filter(
+        (id) => id.toString() !== vendorId,
+      );
+    } else {
+      vendor.followers.push(userId);
+      user.followedVendors.push(vendorId);
+    }
+
+    await vendor.save();
+    await user.save();
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return vendor;
+  } catch (error: any) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error(error);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      error?.message || 'Server error',
+    );
+  }
+};
+
 const updateVendorLogo = async (file: any, vendorId: string) => {
   if (!file || !file.path) {
     throw new AppError(
@@ -138,4 +213,5 @@ export const VendorServices = {
   deleteVendor,
   toggleBlockVendor,
   updateVendorLogo,
+  toggleFollowUnfollow,
 };

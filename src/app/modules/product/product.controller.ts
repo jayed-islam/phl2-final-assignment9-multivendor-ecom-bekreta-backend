@@ -127,11 +127,7 @@ const getProductByCategory = catchAsync(async (req, res) => {
 const updateSingleProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
   const productData = req.body;
-  const product = await ProductServices.updateProduct(
-    id,
-    productData,
-    req.user,
-  );
+  const product = await ProductServices.updateProduct(id, productData);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

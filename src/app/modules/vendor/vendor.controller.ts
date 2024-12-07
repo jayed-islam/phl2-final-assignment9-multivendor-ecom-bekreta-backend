@@ -74,6 +74,22 @@ const toggleBlockVendor = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const toggleFollowUnfollow = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.params.id;
+
+  const updatedVendor = await VendorServices.toggleFollowUnfollow(
+    req.user._id,
+    vendorId,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Vendor toggle follow/Unfollow successfully!',
+    data: updatedVendor,
+  });
+});
+
 const deleteVendor = catchAsync(async (req: Request, res: Response) => {
   const vendorId = req.params.id;
 
@@ -109,4 +125,5 @@ export const VendorControllers = {
   deleteVendor,
   toggleBlockVendor,
   updateVendorLogo,
+  toggleFollowUnfollow,
 };

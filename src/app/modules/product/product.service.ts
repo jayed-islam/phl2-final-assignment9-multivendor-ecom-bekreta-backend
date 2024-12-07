@@ -45,8 +45,11 @@ const createProduct = async (productData: IProduct, files: any[]) => {
       );
     }
 
-    // Create the new product
     const newProduct = await Product.create([productData], { session });
+
+    vendor.products.push(newProduct[0]._id);
+
+    await vendor.save({ session });
 
     await session.commitTransaction();
     session.endSession();
@@ -133,6 +136,243 @@ const getProductsByCategoryIntoDB = async (category: string, limit: any) => {
 //   return { products, pagination };
 // };
 
+// export const getProductList = async (
+//   searchTerm: string,
+//   category: string,
+//   page: number,
+//   limit: number,
+//   minPrice: number = 0,
+//   maxPrice: number = Number.MAX_SAFE_INTEGER,
+//   isLowestFirst?: boolean,
+//   userId?: string,
+// ) => {
+//   const query: Record<string, unknown> = {
+//     isDeleted: false,
+//     isPublished: true,
+//   };
+
+//   if (category) {
+//     query.category = category;
+//   }
+
+//   if (searchTerm) {
+//     const searchRegex = new RegExp(searchTerm, 'i');
+//     query.$or = [{ name: searchRegex }, { description: searchRegex }];
+//   }
+
+//   query.price = { $gte: minPrice, $lte: maxPrice };
+
+//   // Determine sorting priority
+//   const sortOptions: Record<string, SortOrder> = {};
+//   if (typeof isLowestFirst === 'boolean') {
+//     sortOptions.price = isLowestFirst ? 1 : -1;
+//   }
+
+//   let followedVendors: any[] = [];
+//   if (userId) {
+//     const user = await User.findById(userId).select('followedVendors');
+//     followedVendors = user?.followedVendors || [];
+//   }
+
+//   const currentPage = Math.max(1, page);
+//   const skip = (currentPage - 1) * limit;
+
+//   console.log('query', query);
+
+//   // Aggregation pipeline for prioritizing followed vendors
+//   const aggregationPipeline: mongoose.PipelineStage[] = [
+//     { $match: query },
+//     {
+//       $addFields: {
+//         priority: {
+//           $cond: [
+//             { $in: ['$vendor', followedVendors] }, // Check if vendor is in followed list
+//             1, // Higher priority for followed vendors
+//             2, // Lower priority for others
+//           ],
+//         },
+//       },
+//     },
+//     { $sort: { priority: 1, ...sortOptions, createdAt: -1 } },
+//     { $skip: skip },
+//     { $limit: limit },
+//   ];
+
+//   const [products, count] = await Promise.all([
+//     Product.aggregate(aggregationPipeline),
+//     Product.countDocuments(query),
+//   ]);
+
+//   const totalPages = Math.ceil(count / limit);
+
+//   const pagination = {
+//     totalItems: count,
+//     totalPages,
+//     currentPage,
+//     itemsPerPage: limit,
+//   };
+
+//   return { products, pagination };
+// };
+
+// export const getProductList = async (
+//   searchTerm: string,
+//   category: string,
+//   page: number,
+//   limit: number,
+//   minPrice: number = 0,
+//   maxPrice: number = Number.MAX_SAFE_INTEGER,
+//   isLowestFirst?: boolean,
+//   userId?: string,
+// ) => {
+//   // Build the query
+//   const query: Record<string, unknown> = {
+//     isDeleted: false,
+//     isPublished: true,
+//     price: { $gte: minPrice, $lte: maxPrice },
+//   };
+
+//   if (category) {
+//     query.category = category;
+//   }
+
+//   if (searchTerm) {
+//     const searchRegex = new RegExp(searchTerm, 'i');
+//     query.$or = [{ name: searchRegex }, { description: searchRegex }];
+//   }
+
+//   let followedVendors: string[] = [];
+//   if (userId) {
+//     const user = await User.findById(userId).select('followedVendors');
+//     followedVendors = user?.followedVendors || [];
+//   }
+
+//   // Determine sorting options
+//   const sortOptions: Record<string, SortOrder> = {};
+//   if (typeof isLowestFirst === 'boolean') {
+//     sortOptions.price = isLowestFirst ? 1 : -1;
+//   }
+//   sortOptions.createdAt = -1; // Default sorting by newest products
+
+//   // Pagination calculations
+//   const currentPage = Math.max(1, page);
+//   const skip = (currentPage - 1) * limit;
+
+//   // Fetch products
+//   const products = await Product.find(query)
+//     .sort({
+//       ...(followedVendors.length ? { vendor: { $in: followedVendors } } : {}),
+//       ...sortOptions,
+//     })
+//     .skip(skip)
+//     .limit(limit);
+
+//   // Fetch total count for pagination
+//   const count = await Product.countDocuments(query);
+
+//   const totalPages = Math.ceil(count / limit);
+
+//   // Prepare pagination data
+//   const pagination = {
+//     totalItems: count,
+//     totalPages,
+//     currentPage,
+//     itemsPerPage: limit,
+//   };
+
+//   return { products, pagination };
+// };
+
+// export const getProductList = async (
+//   searchTerm: string,
+//   category: string,
+//   page: number,
+//   limit: number,
+//   minPrice: number = 0,
+//   maxPrice: number = Number.MAX_SAFE_INTEGER,
+//   isLowestFirst?: boolean,
+//   userId?: string,
+// ) => {
+//   // Build the base query
+//   const query: Record<string, unknown> = {
+//     isDeleted: false,
+//     isPublished: true,
+//     price: { $gte: minPrice, $lte: maxPrice },
+//   };
+
+//   if (category) {
+//     query.category = category;
+//   }
+
+//   if (searchTerm) {
+//     const searchRegex = new RegExp(searchTerm, 'i');
+//     query.$or = [{ name: searchRegex }, { description: searchRegex }];
+//   }
+
+//   // Get followed vendors if userId is provided
+//   let followedVendors: string[] = [];
+//   if (userId) {
+//     const user = await User.findById(userId).select('followedVendors');
+//     followedVendors = user?.followedVendors || [];
+//   }
+
+//   // Pagination
+//   const currentPage = Math.max(1, page);
+//   const skip = (currentPage - 1) * limit;
+
+//   // Sorting logic
+//   const sortOptions: Record<string, SortOrder> = {};
+//   if (typeof isLowestFirst === 'boolean') {
+//     sortOptions.price = isLowestFirst ? 1 : -1;
+//   }
+//   sortOptions.createdAt = -1; // Default sort by newest products
+
+//   // Fetch products
+//   let productsQuery = Product.find(query);
+
+//   if (followedVendors.length > 0) {
+//     // Separate query for followed vendors
+//     const followedVendorProducts = await Product.find({
+//       ...query,
+//       vendor: { $in: followedVendors },
+//     })
+//       .sort(sortOptions)
+//       .skip(skip)
+//       .limit(limit);
+
+//     const otherProducts = await Product.find({
+//       ...query,
+//       vendor: { $nin: followedVendors },
+//     })
+//       .sort(sortOptions)
+//       .skip(skip)
+//       .limit(limit);
+
+//     // Combine the two arrays
+//     productsQuery = [...followedVendorProducts, ...otherProducts];
+//   } else {
+//     productsQuery = Product.find(query)
+//       .sort(sortOptions)
+//       .skip(skip)
+//       .limit(limit);
+//   }
+
+//   // Fetch total count for pagination
+//   const count = await Product.countDocuments(query);
+
+//   const totalPages = Math.ceil(count / limit);
+
+//   // Prepare pagination data
+//   const pagination = {
+//     totalItems: count,
+//     totalPages,
+//     currentPage,
+//     itemsPerPage: limit,
+//   };
+
+//   return { products: productsQuery, pagination };
+// };
+
 export const getProductList = async (
   searchTerm: string,
   category: string,
@@ -143,9 +383,11 @@ export const getProductList = async (
   isLowestFirst?: boolean,
   userId?: string,
 ) => {
+  // Build the base query
   const query: Record<string, unknown> = {
     isDeleted: false,
     isPublished: true,
+    price: { $gte: minPrice, $lte: maxPrice },
   };
 
   if (category) {
@@ -157,51 +399,62 @@ export const getProductList = async (
     query.$or = [{ name: searchRegex }, { description: searchRegex }];
   }
 
-  query.price = { $gte: minPrice, $lte: maxPrice };
+  // Get followed vendors if userId is provided
+  let followedVendors: string[] = [];
+  if (userId) {
+    const user = await User.findById(userId).select('followedVendors');
+    followedVendors = (user?.followedVendors || []).map((vendorId) =>
+      vendorId.toString(),
+    );
+  }
 
-  // Determine sorting priority
+  // Pagination
+  const currentPage = Math.max(1, page);
+  const skip = (currentPage - 1) * limit;
+
+  // Sorting logic
   const sortOptions: Record<string, SortOrder> = {};
   if (typeof isLowestFirst === 'boolean') {
     sortOptions.price = isLowestFirst ? 1 : -1;
   }
+  sortOptions.createdAt = -1; // Default sort by newest products
 
-  let followedVendors: any[] = [];
-  if (userId) {
-    const user = await User.findById(userId).select('followedVendors');
-    followedVendors = user?.followedVendors || [];
+  // Fetch products
+  let products: any[] = [];
+
+  if (followedVendors.length > 0) {
+    // Separate query for followed vendors
+    const followedVendorProducts = await Product.find({
+      ...query,
+      vendor: { $in: followedVendors },
+    })
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit);
+
+    const otherProducts = await Product.find({
+      ...query,
+      vendor: { $nin: followedVendors },
+    })
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit);
+
+    // Combine the two arrays
+    products = [...followedVendorProducts, ...otherProducts];
+  } else {
+    products = await Product.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit);
   }
 
-  const currentPage = Math.max(1, page);
-  const skip = (currentPage - 1) * limit;
-
-  console.log('query', query);
-
-  // Aggregation pipeline for prioritizing followed vendors
-  const aggregationPipeline: mongoose.PipelineStage[] = [
-    { $match: query },
-    {
-      $addFields: {
-        priority: {
-          $cond: [
-            { $in: ['$vendor', followedVendors] }, // Check if vendor is in followed list
-            1, // Higher priority for followed vendors
-            2, // Lower priority for others
-          ],
-        },
-      },
-    },
-    { $sort: { priority: 1, ...sortOptions, createdAt: -1 } },
-    { $skip: skip },
-    { $limit: limit },
-  ];
-
-  const [products, count] = await Promise.all([
-    Product.aggregate(aggregationPipeline),
-    Product.countDocuments(query),
-  ]);
+  // Fetch total count for pagination
+  const count = await Product.countDocuments(query);
 
   const totalPages = Math.ceil(count / limit);
 
+  // Prepare pagination data
   const pagination = {
     totalItems: count,
     totalPages,
@@ -276,17 +529,40 @@ const getProductListForAdmin = async (
   return { products, pagination };
 };
 
+// const getSingleProductByIdInToDB = async (id: string) => {
+//   const product = await Product.findById(id)
+//     .populate('category', 'name slug image')
+//     .populate('vendor')
+//     .populate('review');
+
+//   if (!product) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+//   }
+
+//   return product;
+// };
+
 const getSingleProductByIdInToDB = async (id: string) => {
   const product = await Product.findById(id)
     .populate('category', 'name slug image')
     .populate('vendor')
-    .populate('review');
+    .populate('reviews');
 
   if (!product) {
     throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
   }
 
-  return product;
+  const relatedProducts = await Product.find({
+    category: product.category._id,
+    _id: { $ne: id },
+    isDeleted: false,
+    isPublished: true,
+  }).limit(5);
+
+  return {
+    product,
+    relatedProducts,
+  };
 };
 
 const getFlashSaleProductsFromDB = async () => {
@@ -300,33 +576,25 @@ const getFlashSaleProductsFromDB = async () => {
       .limit(15)
       .exec();
 
-    if (!products || products.length === 0) {
-      throw new AppError(httpStatus.NOT_FOUND, 'No flash sale products found');
-    }
-
     return products;
   } catch (error: any) {
     throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
-const updateProduct = async (
-  id: string,
-  productData: Partial<IProduct>,
-  user: any,
-) => {
-  if (user.role !== 'admin') {
-    const product = await Product.findById(id);
+const updateProduct = async (id: string, productData: Partial<IProduct>) => {
+  // if (user.role !== 'admin') {
+  //   const product = await Product.findById(id);
 
-    if (!product) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
-    }
+  //   if (!product) {
+  //     throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+  //   }
 
-    // Check if the product belongs to the vendor associated with the user
-    if (product.vendor.toString() !== user.vendor.toString()) {
-      throw new AppError(httpStatus.FORBIDDEN, 'You are not authorized');
-    }
-  }
+  //   // Check if the product belongs to the vendor associated with the user
+  //   if (product.vendor.toString() !== user.vendor.toString()) {
+  //     throw new AppError(httpStatus.FORBIDDEN, 'You are not authorized');
+  //   }
+  // }
   const product = await Product.findByIdAndUpdate(id, productData, {
     new: true,
     runValidators: true,

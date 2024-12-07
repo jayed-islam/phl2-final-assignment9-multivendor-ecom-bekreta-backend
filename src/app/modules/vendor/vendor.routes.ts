@@ -17,7 +17,7 @@ router.post(
 
 router.get('/', VendorControllers.getAllVendors);
 
-router.get('/:id', auth(USER_ROLE.admin), VendorControllers.getVendorById);
+router.get('/:id', VendorControllers.getVendorById);
 
 router.put(
   '/:id',
@@ -37,6 +37,12 @@ router.put(
   '/make-block/:id',
   auth(USER_ROLE.admin),
   VendorControllers.toggleBlockVendor,
+);
+
+router.put(
+  '/make-follow-unfollow/:id',
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
+  VendorControllers.toggleFollowUnfollow,
 );
 
 router.delete('/:id', auth(USER_ROLE.admin), VendorControllers.deleteVendor);
