@@ -6,6 +6,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import mongoose, { SortOrder } from 'mongoose';
 import { Vendor } from '../vendor/vendor.model';
+import { User } from '../user/user.model';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 const createProduct = async (productData: IProduct, files: any[]) => {
@@ -71,6 +72,67 @@ const getProductsByCategoryIntoDB = async (category: string, limit: any) => {
   return products;
 };
 
+// export const getProductList = async (
+//   searchTerm: string,
+//   category: string,
+//   page: number,
+//   limit: number,
+//   minPrice: number = 0,
+//   maxPrice: number = Number.MAX_SAFE_INTEGER,
+//   isLowestFirst?: boolean,
+//   userId?: string,
+// ) => {
+//   const query: Record<string, unknown> = {
+//     isDeleted: false,
+//     isPublished: true,
+//   };
+
+//   if (category) {
+//     query.category = category;
+//   }
+
+//   if (searchTerm) {
+//     const searchRegex = new RegExp(searchTerm, 'i');
+//     query.$or = [{ name: searchRegex }, { description: searchRegex }];
+//   }
+
+//   query.price = { $gte: minPrice, $lte: maxPrice };
+
+//   const countPromise = Product.countDocuments(query);
+
+//   const currentPage = Math.max(1, page);
+
+//   let productsPromise;
+//   if (typeof isLowestFirst === 'boolean') {
+//     const sortOptions: { [key: string]: SortOrder } = isLowestFirst
+//       ? { price: 1 }
+//       : { price: -1 };
+//     productsPromise = Product.find(query)
+//       .sort(sortOptions)
+//       .skip((currentPage - 1) * limit)
+//       .limit(limit)
+//       .populate('category', 'name slug image');
+//   } else {
+//     productsPromise = Product.find(query)
+//       .skip((page - 1) * limit)
+//       .limit(limit)
+//       .populate('category', 'name slug image');
+//   }
+
+//   const [count, products] = await Promise.all([countPromise, productsPromise]);
+
+//   const totalPages = Math.ceil(count / limit);
+
+//   const pagination = {
+//     totalItems: count,
+//     totalPages: totalPages,
+//     currentPage: page,
+//     itemsPerPage: limit,
+//   };
+
+//   return { products, pagination };
+// };
+
 export const getProductList = async (
   searchTerm: string,
   category: string,
@@ -79,9 +141,11 @@ export const getProductList = async (
   minPrice: number = 0,
   maxPrice: number = Number.MAX_SAFE_INTEGER,
   isLowestFirst?: boolean,
+  userId?: string,
 ) => {
   const query: Record<string, unknown> = {
     isDeleted: false,
+    isPublished: true,
   };
 
   if (category) {
@@ -90,48 +154,58 @@ export const getProductList = async (
 
   if (searchTerm) {
     const searchRegex = new RegExp(searchTerm, 'i');
-    query.$or = [
-      { name: searchRegex },
-      { about: searchRegex },
-      { keywords: { $in: [searchRegex] } },
-    ];
+    query.$or = [{ name: searchRegex }, { description: searchRegex }];
   }
 
   query.price = { $gte: minPrice, $lte: maxPrice };
 
-  const countPromise = Product.countDocuments(query);
-
-  const currentPage = Math.max(1, page);
-
-  let productsPromise;
+  // Determine sorting priority
+  const sortOptions: Record<string, SortOrder> = {};
   if (typeof isLowestFirst === 'boolean') {
-    const sortOptions: { [key: string]: SortOrder } = isLowestFirst
-      ? { price: 1 }
-      : { price: -1 };
-    productsPromise = Product.find(query)
-      .sort(sortOptions)
-      .skip((currentPage - 1) * limit)
-      .limit(limit)
-      .populate('category', 'name slug image')
-      .populate('vendor')
-      .populate('reviews');
-  } else {
-    productsPromise = Product.find(query)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate('category', 'name slug image')
-      .populate('vendor')
-      .populate('reviews');
+    sortOptions.price = isLowestFirst ? 1 : -1;
   }
 
-  const [count, products] = await Promise.all([countPromise, productsPromise]);
+  let followedVendors: any[] = [];
+  if (userId) {
+    const user = await User.findById(userId).select('followedVendors');
+    followedVendors = user?.followedVendors || [];
+  }
+
+  const currentPage = Math.max(1, page);
+  const skip = (currentPage - 1) * limit;
+
+  console.log('query', query);
+
+  // Aggregation pipeline for prioritizing followed vendors
+  const aggregationPipeline: mongoose.PipelineStage[] = [
+    { $match: query },
+    {
+      $addFields: {
+        priority: {
+          $cond: [
+            { $in: ['$vendor', followedVendors] }, // Check if vendor is in followed list
+            1, // Higher priority for followed vendors
+            2, // Lower priority for others
+          ],
+        },
+      },
+    },
+    { $sort: { priority: 1, ...sortOptions, createdAt: -1 } },
+    { $skip: skip },
+    { $limit: limit },
+  ];
+
+  const [products, count] = await Promise.all([
+    Product.aggregate(aggregationPipeline),
+    Product.countDocuments(query),
+  ]);
 
   const totalPages = Math.ceil(count / limit);
 
   const pagination = {
     totalItems: count,
-    totalPages: totalPages,
-    currentPage: page,
+    totalPages,
+    currentPage,
     itemsPerPage: limit,
   };
 
@@ -177,8 +251,6 @@ const getProductListForAdmin = async (
     sortOptions.createdAt = -1;
   }
 
-  console.log('query', query);
-
   // Fetch count and products in parallel
   const countPromise = Product.countDocuments(query);
   const productsPromise = Product.find(query)
@@ -215,6 +287,27 @@ const getSingleProductByIdInToDB = async (id: string) => {
   }
 
   return product;
+};
+
+const getFlashSaleProductsFromDB = async () => {
+  try {
+    const products = await Product.find({
+      isOnSale: true,
+      isDeleted: false,
+      isPublished: true,
+    })
+      .populate('category', 'name slug image')
+      .limit(15)
+      .exec();
+
+    if (!products || products.length === 0) {
+      throw new AppError(httpStatus.NOT_FOUND, 'No flash sale products found');
+    }
+
+    return products;
+  } catch (error: any) {
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  }
 };
 
 const updateProduct = async (
@@ -288,4 +381,5 @@ export const ProductServices = {
   softDeleteProduct,
   getProductListForAdmin,
   duplicateProduct,
+  getFlashSaleProductsFromDB,
 };

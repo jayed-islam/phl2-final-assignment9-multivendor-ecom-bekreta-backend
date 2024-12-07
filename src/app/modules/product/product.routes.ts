@@ -38,6 +38,8 @@ router.post(
 
 router.get('/get-single/:productId', ProductController.getSingleProductByID);
 
+router.get('/flash-sale', ProductController.getFlashSaleProducts);
+
 router.get(
   '/get-by-category/:categoryId',
   ProductController.getProductByCategory,

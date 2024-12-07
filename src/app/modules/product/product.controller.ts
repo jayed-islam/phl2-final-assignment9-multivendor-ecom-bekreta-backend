@@ -28,6 +28,7 @@ const getProductList = catchAsync(async (req, res) => {
     minPrice = 0,
     maxPrice = Number.MAX_SAFE_INTEGER,
     isLowestFirst,
+    userId,
   } = req.body;
 
   const { products, pagination } = await ProductServices.getProductList(
@@ -38,6 +39,7 @@ const getProductList = catchAsync(async (req, res) => {
     Number(minPrice),
     Number(maxPrice),
     isLowestFirst,
+    userId,
   );
 
   sendResponse(res, {
@@ -92,6 +94,17 @@ const getSingleProductByID = catchAsync(async (req, res) => {
     success: true,
     message: 'Product data rectrived Successfully!',
     data: product,
+  });
+});
+
+const getFlashSaleProducts = catchAsync(async (req, res) => {
+  const products = await ProductServices.getFlashSaleProductsFromDB();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product data rectrived Successfully!',
+    data: products,
   });
 });
 
@@ -161,4 +174,5 @@ export const ProductController = {
   getProductByCategory,
   getProductListForAdmin,
   makeDuplicate,
+  getFlashSaleProducts,
 };
