@@ -111,30 +111,6 @@ const toggleBlockVendor = async (vendorId: string): Promise<IVendor | null> => {
   return vendor;
 };
 
-// const toggleFollowUnfollow = async (
-//   userId: any,
-//   vendorId: string,
-// ): Promise<IVendor | null> => {
-//   const vendor = await Vendor.findById(vendorId);
-//   if (!vendor) {
-//     throw new AppError(httpStatus.NOT_FOUND, 'Vendor not found');
-//   }
-
-//   const isFollowing = vendor.followers.includes(userId);
-
-//   if (isFollowing) {
-//     vendor.followers = vendor.followers.filter(
-//       (id) => id.toString() !== userId,
-//     );
-//   } else {
-//     vendor.followers.push(userId);
-//   }
-
-//   await vendor.save();
-
-//   return vendor;
-// };
-
 const toggleFollowUnfollow = async (
   userId: any,
   vendorId: any,

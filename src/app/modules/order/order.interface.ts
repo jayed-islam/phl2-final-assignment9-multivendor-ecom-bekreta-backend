@@ -9,9 +9,17 @@ export interface IOrderItem {
 export interface IOrder extends Document {
   user: Types.ObjectId;
   vendor: Types.ObjectId;
+  name: string;
+  phone: string;
+  deliveryCharge: number;
+  address: string;
   status: 'pending' | 'shipped' | 'delivered' | 'canceled';
   items: IOrderItem[];
   totalPrice: number;
   shippingAddress: string;
   paymentStatus: 'paid' | 'unpaid';
+  paymentMethods: 'cashOnDelivery' | 'aamarpay';
+  discount: number;
+  coupon: Types.ObjectId;
+  isCouponApplied: boolean;
 }

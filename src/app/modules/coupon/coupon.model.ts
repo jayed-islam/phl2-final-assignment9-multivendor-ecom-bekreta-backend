@@ -11,7 +11,7 @@ const couponSchema = new Schema<ICoupon>(
     },
     isActive: { type: Boolean, default: true },
     discountValue: { type: Number, required: true },
-    expiryDate: { type: Date, required: true },
+    expiryDate: { type: Date, default: Date.now() },
     usageLimit: { type: Number, required: true },
     usedCount: { type: Number, default: 0 },
     applicableProducts: [{ type: Schema.Types.ObjectId, ref: 'Product' }],

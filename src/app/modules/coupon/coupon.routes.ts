@@ -1,27 +1,15 @@
 import { Router } from 'express';
 import { CouponController } from './coupon.controller';
-import authAdmin from '../../middlewares/adminAuth';
 import { USER_ROLE } from '../user/user.constants';
+import auth from '../../middlewares/auth';
 
 const router = Router();
 
 // Admin routes
-router.post(
-  '/',
-  authAdmin(USER_ROLE.admin, USER_ROLE.superAdmin),
-  CouponController.createCoupon,
-);
+router.post('/', auth(USER_ROLE.admin), CouponController.createCoupon);
 
-router.put(
-  '/:id',
-  authAdmin(USER_ROLE.admin, USER_ROLE.superAdmin),
-  CouponController.updateCoupon,
-);
-router.delete(
-  '/:id',
-  authAdmin(USER_ROLE.admin, USER_ROLE.superAdmin),
-  CouponController.deleteCoupon,
-);
+router.put('/:id', auth(USER_ROLE.admin), CouponController.updateCoupon);
+router.delete('/:id', auth(USER_ROLE.admin), CouponController.deleteCoupon);
 
 // Public routes
 router.post('/validate', CouponController.validateCoupon);

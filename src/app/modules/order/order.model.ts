@@ -13,10 +13,31 @@ const orderSchema = new Schema<IOrder>(
       ref: 'Vendor',
       required: true,
     },
+    coupon: {
+      type: Schema.Types.ObjectId,
+      ref: 'Coupon',
+    },
     status: {
       type: String,
       enum: ['pending', 'shipped', 'delivered', 'canceled'],
       default: 'pending',
+    },
+    paymentMethods: {
+      type: String,
+      enum: ['cashOnDelivery', 'aamarpay'],
+      default: 'aamarpay',
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    address: {
+      type: String,
+      required: true,
     },
     items: [
       {
@@ -39,9 +60,16 @@ const orderSchema = new Schema<IOrder>(
       type: Number,
       required: true,
     },
-    shippingAddress: {
-      type: String,
+    deliveryCharge: {
+      type: Number,
       required: true,
+    },
+    discount: {
+      type: Number,
+    },
+    isCouponApplied: {
+      type: Boolean,
+      default: false,
     },
     paymentStatus: {
       type: String,
