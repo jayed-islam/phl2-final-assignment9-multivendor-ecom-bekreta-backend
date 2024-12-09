@@ -89,28 +89,31 @@ const getAllPayments = async () => {
 };
 
 // Function to initiate a payment for a premium post
-const makePayment = async (userId: string, postId: string, amount: number) => {
+const makePayment = async (
+  userId: string,
+  vendor: string,
+  order: string,
+  amount: number,
+  name?: string,
+  address?: string,
+  phone?: string,
+) => {
   const session = await mongoose.startSession();
 
   const user = await User.findById(userId);
-  // const post = await Post.findById(postId);
-
-  // if (!post) {
-  //   throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
-  // }
 
   try {
     session.startTransaction();
 
-    const transactionId = `TXN-${Date.now()}`; // Unique transaction ID
+    const transactionId = `TXN-${Date.now()}`;
 
     const paymentInfo: PaymentInfo = {
       transactionId,
       amount: amount ?? 51,
-      customerName: user?.name ?? 'N/A',
+      customerName: name ?? 'N/A',
       customerEmail: user?.email ?? 'N/A',
-      customerAddress: user?.address ?? 'address',
-      customerPhone: user?.phone ?? '01309090909',
+      customerAddress: address ?? 'address',
+      customerPhone: phone ?? '01309090909',
     };
 
     // Initiate payment via the payment gateway
@@ -126,7 +129,8 @@ const makePayment = async (userId: string, postId: string, amount: number) => {
       [
         {
           user: userId,
-          post: postId,
+          vendor,
+          order,
           amount,
           transactionId,
           paymentStatus: 'PENDING',
@@ -138,12 +142,7 @@ const makePayment = async (userId: string, postId: string, amount: number) => {
     await session.commitTransaction();
     await session.endSession();
 
-    return paymentSession; // Return session for frontend to handle payment redirection
-
-    await session.commitTransaction();
-    await session.endSession();
-
-    return paymentSession; // Return session for frontend to handle payment redirection
+    return paymentSession;
   } catch (error) {
     await session.abortTransaction();
     await session.endSession();

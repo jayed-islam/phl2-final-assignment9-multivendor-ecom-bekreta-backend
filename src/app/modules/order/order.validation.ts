@@ -22,11 +22,6 @@ const orderCreateValidationSchema = z.object({
     paymentMethod: z.string({ required_error: 'Payment method is required' }),
     paymentStatus: z.string().optional(),
     address: z.string({ required_error: 'Address is required' }),
-    coupon: z.string({ required_error: 'Coupon is required' }),
-    discount: z.number({ required_error: 'Discount is required' }),
-    isCouponApplied: z.boolean({
-      required_error: 'IsCouponApplied is required',
-    }),
     totalPrice: z
       .number({
         required_error: 'Total price is required',

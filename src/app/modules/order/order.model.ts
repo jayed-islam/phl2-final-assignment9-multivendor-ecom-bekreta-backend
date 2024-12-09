@@ -22,7 +22,7 @@ const orderSchema = new Schema<IOrder>(
       enum: ['pending', 'shipped', 'delivered', 'canceled'],
       default: 'pending',
     },
-    paymentMethods: {
+    paymentMethod: {
       type: String,
       enum: ['cashOnDelivery', 'aamarpay'],
       default: 'aamarpay',

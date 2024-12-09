@@ -9,9 +9,14 @@ const paymentSchema = new Schema<IPayment>(
       ref: 'User',
       required: true,
     },
-    post: {
+    vendor: {
       type: Schema.Types.ObjectId,
-      ref: 'Post',
+      ref: 'Vendor',
+      required: true,
+    },
+    order: {
+      type: Schema.Types.ObjectId,
+      ref: 'Order',
       required: true,
     },
     amount: {

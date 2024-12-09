@@ -18,7 +18,7 @@ export interface IOrder extends Document {
   totalPrice: number;
   shippingAddress: string;
   paymentStatus: 'paid' | 'unpaid';
-  paymentMethods: 'cashOnDelivery' | 'aamarpay';
+  paymentMethod: 'cashOnDelivery' | 'aamarpay';
   discount: number;
   coupon: Types.ObjectId;
   isCouponApplied: boolean;

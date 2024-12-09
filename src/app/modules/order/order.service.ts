@@ -7,262 +7,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { startOfToday, subDays } from 'date-fns';
 import { Order } from './order.model';
-
-// const createOrder = async (orderData: IOrder) => {
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
-
-//   try {
-//     // Fetch the user's cart with product details
-//     const cart = await Cart.findOne({ userId: orderData.userId })
-//       .populate('products.product')
-//       .session(session);
-//     if (!cart || cart.products.length === 0) {
-//       throw new Error('Cart is empty');
-//     }
-
-//     // Check product availability and calculate total price
-//     let totalPrice = 0;
-//     const productUpdates = cart.products.map(async (item) => {
-//       const product = await Product.findById(item.product).session(session);
-//       if (!product || product.stock < item.quantity) {
-//         throw new Error(`Product ${product!.name} is out of stock`);
-//       }
-//       totalPrice += product.price * item.quantity;
-//       product.stock -= item.quantity;
-//       return await product.save({ session });
-//     });
-
-//     await Promise.all(productUpdates);
-
-//     // Create the order
-//     const order = new Order({
-//       userId: orderData.userId,
-//       products: cart.products.map((item) => ({
-//         product: item.product._id,
-//         quantity: item.quantity,
-//       })),
-//       totalPrice,
-//       status: 'pending',
-//     });
-
-//     await order.save({ session });
-
-//     // Clear the cart
-//     await Cart.findOneAndDelete({}).session(session);
-
-//     await session.commitTransaction();
-//     session.endSession();
-
-//     return order;
-//   } catch (error) {
-//     await session.abortTransaction();
-//     session.endSession();
-//     throw error;
-//   }
-// };
-
-// const createOrder = async (orderData: IOrder) => {
-//   const { products } = orderData;
-//   const session = await startSession();
-//   session.startTransaction();
-
-//   try {
-//     // Fetch the user's cart
-//     const cart = await Cart.findOne({ userId: orderData.userId }).session(
-//       session,
-//     );
-//     if (!cart || cart.products.length === 0) {
-//       throw new AppError(httpStatus.NOT_FOUND, 'Your Cart is empty');
-//     }
-
-//     console.log('cart', cart);
-
-//     // Filter selected items from the cart
-//     const selectedItems = cart.products.filter((item) =>
-//       products.some(
-//         (productItem) =>
-//           productItem.product.toString() === item.product.toString(),
-//       ),
-//     );
-
-//     if (selectedItems.length === 0) {
-//       throw new AppError(
-//         httpStatus.NOT_FOUND,
-//         'Selected items are not found in the cart',
-//       );
-//     }
-
-//     console.log('select', selectedItems);
-
-//     // Check product availability and calculate total price
-//     let totalPrice = 0;
-//     const orderItems = await Promise.all(
-//       selectedItems.map(async (item) => {
-//         console.log('ii', item);
-//         const selectedItem = products.find(
-//           (product) => product.product.toString() === item.product.toString(),
-//         );
-//         console.log('item', selectedItem);
-//         if (selectedItem) {
-//           const product = await Product.findById(item.product._id).session(
-//             session,
-//           );
-//           if (!product || product.stock < selectedItem.quantity) {
-//             throw new AppError(
-//               httpStatus.NOT_FOUND,
-//               `Product ${product?.name || 'Unknown'} is out of stock`,
-//             );
-//           }
-//           totalPrice += product.price * selectedItem.quantity;
-//           product.stock -= selectedItem.quantity;
-//           await product.save({ session });
-//           return {
-//             product: product._id,
-//             quantity: selectedItem.quantity,
-//             price: product.price,
-//           };
-//         }
-//         return null;
-//       }),
-//     );
-
-//     console.log('order', orderItems, totalPrice);
-
-//     // Create the order
-//     const order = new Order({
-//       ...orderData,
-//       products: orderItems.filter(Boolean),
-//       totalPrice,
-//     });
-
-//     await order.save({ session });
-
-//     // Remove selected items from the cart
-//     cart.products = cart.products.filter(
-//       (item) =>
-//         !products.some((product) => product.product === item.product._id),
-//     );
-//     await cart.save({ session });
-
-//     await session.commitTransaction();
-//     session.endSession();
-
-//     return order;
-//   } catch (error: any) {
-//     await session.abortTransaction();
-//     session.endSession();
-//     throw new AppError(httpStatus.CONFLICT, error.message);
-//   }
-// };
-
-// const createOrder = async (orderData: IOrder, user: any) => {
-//   const { products, userId } = orderData;
-//   const session = await startSession();
-//   session.startTransaction();
-
-//   try {
-//     if (userId !== user._id.toString()) {
-//       throw new AppError(httpStatus.UNAUTHORIZED, 'User ID does not match');
-//     }
-//     // Fetch the user's cart
-//     const cart = await Cart.findOne({ userId: orderData.userId }).session(
-//       session,
-//     );
-//     if (!cart || cart.products.length === 0) {
-//       throw new AppError(httpStatus.NOT_FOUND, 'Your Cart is empty');
-//     }
-
-//     console.log('cart', cart);
-//     console.log('order', products);
-//     console.log('userId', userId);
-//     console.log('_id', user._id);
-
-//     // Filter selected items from the cart
-//     const selectedItems = cart.products.filter((item) =>
-//       products.some(
-//         (productItem) =>
-//           productItem.product.toString() === item.product.toString(),
-//       ),
-//     );
-
-//     if (selectedItems.length === 0) {
-//       throw new AppError(
-//         httpStatus.NOT_FOUND,
-//         'Selected items are not found in the cart',
-//       );
-//     }
-
-//     console.log('select', selectedItems);
-
-//     // Check product availability and calculate total price
-//     let totalPrice = 0;
-//     const orderItems = await Promise.all(
-//       selectedItems.map(async (item) => {
-//         const selectedItem = products.find(
-//           (product) => product.product.toString() === item.product.toString(),
-//         );
-
-//         if (selectedItem) {
-//           const product = await Product.findById(item.product._id).session(
-//             session,
-//           );
-//           if (!product || product.stock < selectedItem.quantity) {
-//             throw new AppError(
-//               httpStatus.NOT_FOUND,
-//               `Product ${product?.name || 'Unknown'} is out of stock`,
-//             );
-//           }
-//           totalPrice += product.price * selectedItem.quantity;
-//           product.stock -= selectedItem.quantity;
-//           await product.save({ session });
-//           return {
-//             product: product._id,
-//             quantity: selectedItem.quantity,
-//             price: product.price,
-//           };
-//         }
-//         return null;
-//       }),
-//     );
-
-//     console.log('order', orderItems, totalPrice);
-
-//     // Create the order
-//     const order = new Order({
-//       ...orderData,
-//       products: orderItems.filter(Boolean),
-//       totalPrice,
-//     });
-
-//     await order.save({ session });
-
-//     // Remove selected items from the cart
-//     cart.products = cart.products.filter(
-//       (item) =>
-//         !products.some(
-//           (product) => product.product.toString() === item.product.toString(),
-//         ),
-//     );
-//     await cart.save({ session });
-
-//     await session.commitTransaction();
-//     session.endSession();
-
-//     return order;
-//   } catch (error: any) {
-//     await session.abortTransaction();
-//     session.endSession();
-//     throw new AppError(httpStatus.CONFLICT, error.message);
-//   }
-// };
-
-// const getOrders = async (page: number, limit: number): Promise<IOrder[]> => {
-//   const orders = await Order.find()
-//     .skip((page - 1) * limit)
-//     .limit(limit);
-//   return orders;
-// };
+import { PaymentService } from '../payment/payment.service';
 
 const createOrder = async (orderData: IOrder) => {
   const session = await startSession();
@@ -304,12 +49,6 @@ const createOrder = async (orderData: IOrder) => {
           quantity: orderedItem.quantity,
           price: productInDb.price,
           totalPrice: itemTotalPrice,
-          // ...(orderedItem.productColor && {
-          //   productColor: orderedItem.productColor,
-          // }),
-          // ...(orderedItem.productSize && {
-          //   productSize: orderedItem.productSize,
-          // }),
         };
       }),
     );
@@ -331,6 +70,26 @@ const createOrder = async (orderData: IOrder) => {
     });
 
     await order.save({ session });
+    // (userId: string, vendor: string, order: string, amount: number)
+    // name?: string, address?: string, phone?: string
+    if (orderData.paymentMethod === 'aamarpay') {
+      const paymentResponse = await PaymentService.makePayment(
+        order.user as any,
+        order.vendor as any,
+        order._id,
+        order.totalPrice,
+        order.name,
+        order.address,
+        order.phone,
+      );
+
+      // Commit the transaction
+      await session.commitTransaction();
+      session.endSession();
+
+      // Return the payment response
+      return paymentResponse;
+    }
 
     // Commit the transaction
     await session.commitTransaction();
