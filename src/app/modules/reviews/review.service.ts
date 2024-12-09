@@ -6,16 +6,41 @@ import { IReview } from './review.interface';
 import { Review } from './review.model';
 import { Product } from '../product/product.model';
 
+import mongoose from 'mongoose';
+
 const createReview = async (
   reviewData: IReview,
   file?: any,
 ): Promise<IReview> => {
-  if (file) {
-    reviewData.image = file.path;
-  }
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const review = await Review.create(reviewData);
-  return review;
+  try {
+    if (file) {
+      reviewData.image = file.path;
+    }
+
+    const review = await Review.create([reviewData], { session });
+
+    const product = reviewData.product;
+
+    const result = await Product.findByIdAndUpdate(
+      product,
+      { $push: { reviews: review[0]._id } },
+      { session },
+    );
+
+    console.log('res', reviewData, result);
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return review[0];
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 const getAllReviewsByProductId = async (

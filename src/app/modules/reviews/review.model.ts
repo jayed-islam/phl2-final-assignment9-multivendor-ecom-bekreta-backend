@@ -24,7 +24,7 @@ const reviewSchema = new Schema<IReview>(
       min: 1,
       max: 5,
     },
-    comment: {
+    content: {
       type: String,
     },
     image: {

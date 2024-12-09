@@ -259,6 +259,7 @@ const getOrdersByUserId = async (
         path: 'items.product',
         model: 'Product',
       })
+      .populate('vendor')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit),

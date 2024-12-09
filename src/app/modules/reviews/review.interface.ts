@@ -5,6 +5,6 @@ export interface IReview extends Document {
   customer: Types.ObjectId;
   vendor: Types.ObjectId;
   rating: number;
-  comment: string;
+  content: string;
   image: string;
 }
