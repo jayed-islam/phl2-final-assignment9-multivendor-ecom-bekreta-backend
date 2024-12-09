@@ -21,8 +21,8 @@ router.post(
 
 router.post(
   '/get-order-list',
-  auth(USER_ROLE.admin),
-  OrderController.getAllOrders,
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
+  OrderController.getAllOrdersForAdmin,
 );
 router.post(
   '/user/:userId',
@@ -35,7 +35,7 @@ router.put('/:orderId', auth(USER_ROLE.admin), OrderController.updateOrder);
 
 router.patch(
   '/update-status',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
   OrderController.updateOrderStatus,
 );
 router.delete('/:orderId', auth(USER_ROLE.admin), OrderController.deleteOrder);

@@ -106,14 +106,18 @@ const createOrder = async (orderData: IOrder) => {
 const getAllOrdersForAdmin = async (
   page: number,
   limit: number,
+  vendorId: string,
   startDate?: string,
   endDate?: string,
   searchTerm?: string,
   status?: string,
-  district?: string,
   sortBy?: 'latest' | 'oldest',
 ) => {
-  const query: any = {};
+  const query: any = {
+    ...(vendorId && {
+      vendor: vendorId,
+    }),
+  };
 
   // Filter by date range
   if (startDate || endDate) {
@@ -141,11 +145,6 @@ const getAllOrdersForAdmin = async (
     query.status = status;
   }
 
-  // Regex search by district
-  if (district) {
-    query.district = { $regex: district, $options: 'i' };
-  }
-
   const sort: { [key: string]: SortOrder } =
     sortBy === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
 
@@ -156,7 +155,7 @@ const getAllOrdersForAdmin = async (
     .skip((page - 1) * limit)
     .limit(limit)
     .populate({
-      path: 'products.product',
+      path: 'items.product',
       model: 'Product',
     });
 
@@ -237,6 +236,7 @@ const updateOrderStatus = async (orderId: string, newStatus: string) => {
     );
   }
 };
+
 const getOrdersByUserId = async (
   page: number,
   limit: number,

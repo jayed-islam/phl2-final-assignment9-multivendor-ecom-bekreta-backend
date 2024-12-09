@@ -27,7 +27,7 @@ const createOrder = catchAsync(async (req, res) => {
 //   });
 // });
 
-const getAllOrders = catchAsync(async (req, res) => {
+const getAllOrdersForAdmin = catchAsync(async (req, res) => {
   const {
     page = 1,
     limit = 10,
@@ -35,17 +35,17 @@ const getAllOrders = catchAsync(async (req, res) => {
     endDate,
     searchTerm,
     status,
-    district,
     sortBy,
+    vendorId,
   } = req.body;
   const { orders, pagination, meta } = await OrderServices.getAllOrdersForAdmin(
     Number(page),
     Number(limit),
+    vendorId as string,
     startDate as string,
     endDate as string,
     searchTerm as string,
     status as string,
-    district as string,
     sortBy as 'latest' | 'oldest',
   );
 
@@ -136,7 +136,7 @@ const orderSummary = catchAsync(async (req, res) => {
 
 export const OrderController = {
   createOrder,
-  getAllOrders,
+  getAllOrdersForAdmin,
   getOrderById,
   updateOrder,
   deleteOrder,

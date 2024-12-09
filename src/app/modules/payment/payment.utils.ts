@@ -9,7 +9,7 @@ export const initiatePayment = async (payload: PaymentInfo, userId: string) => {
     signature_key: config.SIGNATURE_KEY,
     tran_id: payload.transactionId,
     success_url: `${config.APP_URL}/api/v1/payment/success?tnxId=${payload.transactionId}&userId=${userId}`,
-    fail_url: `${config.APP_URL}/api/payment/fail?tnxId=${payload.transactionId}`,
+    fail_url: `${config.APP_URL}/api/v1/payment/fail?tnxId=${payload.transactionId}`,
     cancel_url: 'http://www.merchantdomain.com/cancelpage.html',
     amount: payload.amount,
     currency: 'BDT',

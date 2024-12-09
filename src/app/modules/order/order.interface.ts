@@ -9,6 +9,7 @@ export interface IOrderItem {
 export interface IOrder extends Document {
   user: Types.ObjectId;
   vendor: Types.ObjectId;
+  payment: Types.ObjectId;
   name: string;
   phone: string;
   deliveryCharge: number;

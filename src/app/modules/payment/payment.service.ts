@@ -10,6 +10,7 @@ import {
 } from './payment.response';
 import { Payment } from './payment.model';
 import { PaymentInfo } from './payment.interface';
+import { Order } from '../order/order.model';
 
 // Payment confirmation function (after payment gateway verification)
 const PaymentConfirmation = async (transactionId: string) => {
@@ -31,15 +32,17 @@ const PaymentConfirmation = async (transactionId: string) => {
         throw new AppError(httpStatus.NOT_FOUND, 'Payment record not found');
       }
 
-      // const post = await Post.findById(payment.post);
-      // if (!post) {
-      //   throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
-      // }
+      const orderId = payment.order.toString();
 
-      // // Optionally, update any necessary user data, e.g., granting access to the premium post
-      // await User.findByIdAndUpdate(payment.user, {
-      //   $push: { purchasedPosts: post._id },
-      // });
+      const orderUpdate = await Order.findByIdAndUpdate(
+        orderId,
+        { payment: payment._id },
+        { new: true, session },
+      );
+
+      if (!orderUpdate) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+      }
 
       await session.commitTransaction();
       await session.endSession();
@@ -68,27 +71,10 @@ const PaymentFailure = async (transactionId: string) => {
       { transactionId },
       { paymentStatus: 'FAILED' },
     );
-    return htmlPaymentFailContent; // Failure response content
+    return htmlPaymentFailContent;
   }
 };
 
-const getAllPayments = async () => {
-  try {
-    const payments = await Payment.find()
-      .populate('user', '-password')
-      .populate('post')
-      .sort({ createdAt: -1 });
-
-    return payments;
-  } catch (error) {
-    throw new AppError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      'Error fetching payments',
-    ); // Handle errors
-  }
-};
-
-// Function to initiate a payment for a premium post
 const makePayment = async (
   userId: string,
   vendor: string,
@@ -122,8 +108,6 @@ const makePayment = async (
       user?._id as string,
     );
 
-    console.log('session', paymentSession);
-
     // Create a payment record in the database
     await Payment.create(
       [
@@ -149,6 +133,34 @@ const makePayment = async (
     throw new AppError(
       httpStatus.CONFLICT,
       error instanceof Error ? error.message : 'Something went wrong',
+    );
+  }
+};
+
+const getAllPayments = async (page = 1, limit = 10, filter = {}, sort = {}) => {
+  try {
+    const skip = (page - 1) * limit;
+
+    const payments = await Payment.find(filter)
+      .populate('user', '-password')
+      .populate('vendor', 'name')
+      .populate('order')
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Payment.countDocuments(filter);
+
+    return {
+      payments,
+      total,
+      page,
+      limit,
+    };
+  } catch (error) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error fetching payments',
     );
   }
 };
