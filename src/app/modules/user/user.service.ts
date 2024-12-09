@@ -81,8 +81,8 @@ const updateUserProfilePicture = async (
     // Update the user's profile picture in the database
     const userUpdatedData = await User.findByIdAndUpdate(
       userId,
-      { profilePicture: profilePicturePath }, // Set the new profile picture path
-      { new: true }, // Return the updated document
+      { profilePicture: profilePicturePath },
+      { new: true },
     );
 
     return userUpdatedData;

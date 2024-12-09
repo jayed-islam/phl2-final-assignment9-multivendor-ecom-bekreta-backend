@@ -252,11 +252,11 @@ const getOrdersByUserId = async (
   //   .limit(limit);
   const [totalItems, orders] = await Promise.all([
     // Count total items
-    Order.countDocuments({ userId }),
+    Order.countDocuments({ user: userId }),
     // Fetch paginated orders
-    Order.find({ userId })
+    Order.find({ user: userId })
       .populate({
-        path: 'products.product',
+        path: 'items.product',
         model: 'Product',
       })
       .sort({ createdAt: -1 })

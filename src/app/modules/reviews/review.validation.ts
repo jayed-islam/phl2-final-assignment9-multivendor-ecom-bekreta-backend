@@ -6,6 +6,7 @@ const createReviewSchema = z.object({
     customer: z
       .string({ required_error: 'Customer ID is required' })
       .nonempty(),
+    vendor: z.string({ required_error: 'Vendor ID is required' }).nonempty(),
     rating: z
       .number()
       .min(1, { message: 'Rating must be at least 1' })
