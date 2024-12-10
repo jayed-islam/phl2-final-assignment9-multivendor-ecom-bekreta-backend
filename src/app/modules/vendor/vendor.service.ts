@@ -48,9 +48,7 @@ const getAllVendors = async (): Promise<IVendor[]> => {
 };
 
 const getVendorById = async (vendorId: string): Promise<IVendor | null> => {
-  const vendor = await Vendor.findById(vendorId)
-    .populate('followers')
-    .populate('products');
+  const vendor = await Vendor.findById(vendorId).populate('products');
   if (!vendor) {
     throw new AppError(httpStatus.NOT_FOUND, 'Vendor not found');
   }

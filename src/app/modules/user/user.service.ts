@@ -101,9 +101,7 @@ const getUserProfile = async (userId: string): Promise<any> => {
       path: 'followedVendors',
       select: 'shopName address',
     })
-    .populate({
-      path: 'vendor',
-    })
+    .populate('vendor')
     .sort({ createdAt: -1 })
     .exec();
 

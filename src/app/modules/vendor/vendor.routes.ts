@@ -41,7 +41,7 @@ router.put(
 
 router.put(
   '/make-follow-unfollow/:id',
-  auth(USER_ROLE.admin, USER_ROLE.vendor),
+  auth(USER_ROLE.admin, USER_ROLE.vendor, USER_ROLE.customer),
   VendorControllers.toggleFollowUnfollow,
 );
 

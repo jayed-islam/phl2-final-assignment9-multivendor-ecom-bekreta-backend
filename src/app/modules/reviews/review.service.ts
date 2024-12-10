@@ -52,13 +52,19 @@ const getAllReviewsByProductId = async (
 };
 
 const getAllVendorReviews = async (vendorId: string): Promise<IReview[]> => {
-  const products = await Product.find({ vendorId }).populate({
-    path: 'reviews',
-    select: 'rating comment customer',
-  });
-
-  // Flatten the reviews from all products
-  const reviews: any[] = products.flatMap((product) => product.reviews);
+  const reviews = await Review.find({ vendor: vendorId })
+    .populate({
+      path: 'customer',
+      select: 'name email',
+    })
+    .populate({
+      path: 'product',
+      select: 'name price',
+    })
+    .populate({
+      path: 'vendor',
+      select: 'shopName logo',
+    });
 
   return reviews;
 };

@@ -33,7 +33,7 @@ const getAllReviewsByProductId = catchAsync(async (req, res) => {
 });
 
 const getVendorReviews = catchAsync(async (req: Request, res: Response) => {
-  const vendorId = req.user.id;
+  const vendorId = req.params.id;
 
   const reviews = await ReviewServices.getAllVendorReviews(vendorId);
 
