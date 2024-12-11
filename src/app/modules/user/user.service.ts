@@ -95,7 +95,7 @@ const getAllUsers = async () => {
   return User.find().select('-password');
 };
 
-const getUserProfile = async (userId: string): Promise<any> => {
+const getUserProfile = async (userId: string) => {
   const user = await User.findById(userId)
     .populate({
       path: 'followedVendors',
@@ -104,6 +104,8 @@ const getUserProfile = async (userId: string): Promise<any> => {
     .populate('vendor')
     .sort({ createdAt: -1 })
     .exec();
+
+  console.log('user', user);
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
