@@ -41,4 +41,10 @@ router.get(
   ReviewControllers.getVendorReviews,
 );
 
+router.get(
+  '/get-list',
+  auth(USER_ROLE.admin),
+  ReviewControllers.getAllReviewsForAdmin,
+);
+
 export const ReviewRoutes = router;

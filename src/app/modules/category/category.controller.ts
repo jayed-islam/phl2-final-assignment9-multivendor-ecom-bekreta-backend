@@ -31,6 +31,20 @@ const getAllCategories = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Get all categories
+const getAllCategoryFOrAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const categories = await CategoryServices.getAllCategoryFOrAdmin();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Categories retrieved successfully!',
+      data: categories,
+    });
+  },
+);
+
 // Get a single category by ID
 const getCategoryById = catchAsync(async (req: Request, res: Response) => {
   const categoryId = req.params.id;
@@ -111,4 +125,5 @@ export const CategoryControllers = {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  getAllCategoryFOrAdmin,
 };

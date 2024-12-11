@@ -58,9 +58,23 @@ const deleteReview = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllReviewsForAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const reviews = await ReviewServices.getAllReviewsForAdmin();
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Admin reviews retrieved successfully!',
+      data: reviews,
+    });
+  },
+);
+
 export const ReviewControllers = {
   createReview,
   getAllReviewsByProductId,
   deleteReview,
   getVendorReviews,
+  getAllReviewsForAdmin,
 };

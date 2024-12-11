@@ -7,4 +7,5 @@ export interface IReview extends Document {
   rating: number;
   content: string;
   image: string;
+  isDeleted: boolean;
 }

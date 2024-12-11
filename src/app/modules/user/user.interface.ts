@@ -11,7 +11,7 @@ export interface IUser {
   address?: string;
   profilePicture?: string;
   role: 'admin' | 'customer' | 'vendor';
-  status: 'active' | 'diactive' | 'blocked';
+  status: 'active' | 'suspended' | 'blocked';
   isDeleted: boolean;
   followedVendors: Types.ObjectId[];
   vendor: Types.ObjectId;

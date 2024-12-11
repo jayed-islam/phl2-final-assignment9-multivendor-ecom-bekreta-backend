@@ -31,6 +31,11 @@ router.post(
   CategoryControllers.createCategory,
 );
 router.get('/', CategoryControllers.getAllCategories);
+router.get(
+  '/get-list',
+  auth(USER_ROLE.admin),
+  CategoryControllers.getAllCategoryFOrAdmin,
+);
 
 router.get('/:id', auth(USER_ROLE.admin), CategoryControllers.getCategoryById);
 router.put(

@@ -51,6 +51,18 @@ const getAllCategories = async (): Promise<ICategory[]> => {
   }
 };
 
+// Get all categories with optional filtering
+const getAllCategoryFOrAdmin = async (): Promise<ICategory[]> => {
+  try {
+    const categories = await Category.find();
+    return categories;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    throw new AppError(httpStatus.CONFLICT, 'Server error');
+  }
+};
+
 // Get a single category by ID
 const getCategoryById = async (
   categoryId: string,
@@ -72,8 +84,8 @@ const updateCategory = async (
   categoryId: string,
   updateData: Partial<ICategory>,
 ): Promise<ICategory | null> => {
-  const updatedCategory = await Category.findOneAndUpdate(
-    { _id: categoryId, isDeleted: false },
+  const updatedCategory = await Category.findByIdAndUpdate(
+    categoryId,
     updateData,
     { new: true, runValidators: true },
   );
@@ -108,4 +120,5 @@ export const CategoryServices = {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  getAllCategoryFOrAdmin,
 };

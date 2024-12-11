@@ -11,11 +11,9 @@ const CategorySchema = new Schema<ICategory>(
     slug: {
       type: String,
       required: true,
-      unique: true,
     },
     image: {
       type: String,
-      required: true,
     },
     isDeleted: {
       type: Boolean,

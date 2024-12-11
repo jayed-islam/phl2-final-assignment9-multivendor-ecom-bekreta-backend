@@ -22,15 +22,30 @@ const createReview = async (
 
     const review = await Review.create([reviewData], { session });
 
-    const product = reviewData.product;
+    const productId = reviewData.product;
 
-    const result = await Product.findByIdAndUpdate(
-      product,
-      { $push: { reviews: review[0]._id } },
+    // Fetch the product to calculate the new average rating
+    const product = await Product.findById(productId).session(session);
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    // Calculate the new rating and update product
+    const newRatingCount = product.reviews.length + 1;
+    const newAverageRating =
+      ((product.rating || 0) * product.reviews.length + reviewData.rating) /
+      newRatingCount;
+
+    await Product.findByIdAndUpdate(
+      productId,
+      {
+        $push: { reviews: review[0]._id },
+        rating: newAverageRating,
+        reviewsCount: newRatingCount,
+      },
       { session },
     );
-
-    console.log('res', reviewData, result);
 
     await session.commitTransaction();
     session.endSession();
@@ -77,9 +92,28 @@ const deleteReview = async (reviewId: string): Promise<void> => {
   }
 };
 
+const getAllReviewsForAdmin = async (): Promise<IReview[]> => {
+  const reviews = await Review.find()
+    .populate({
+      path: 'customer',
+      select: 'name email',
+    })
+    .populate({
+      path: 'product',
+      select: 'name price',
+    })
+    .populate({
+      path: 'vendor',
+      select: 'shopName logo',
+    });
+
+  return reviews;
+};
+
 export const ReviewServices = {
   createReview,
   getAllReviewsByProductId,
   deleteReview,
   getAllVendorReviews,
+  getAllReviewsForAdmin,
 };

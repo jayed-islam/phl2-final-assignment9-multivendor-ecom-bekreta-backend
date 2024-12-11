@@ -30,6 +30,10 @@ const reviewSchema = new Schema<IReview>(
     image: {
       type: String,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

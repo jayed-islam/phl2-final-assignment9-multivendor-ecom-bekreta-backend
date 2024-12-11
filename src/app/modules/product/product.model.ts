@@ -49,7 +49,6 @@ const productSchema = new Schema<IProduct>(
     rating: {
       type: Number,
       min: 0,
-      max: 5,
       default: 0,
     },
     vendor: {
