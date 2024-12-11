@@ -51,6 +51,7 @@ const updateProductValidationSchema = z.object({
     images: z.array(z.string()).optional(),
     specifications: z.array(z.string()).optional(),
     keywords: z.array(z.string()).optional(),
+    isDeleted: z.boolean().optional(),
     status: z
       .enum(['IN_STOCK', 'OUT_OF_STOCK', 'DISCOUNTED', 'FEATURED'])
       .optional(),

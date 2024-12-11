@@ -82,11 +82,52 @@ const updateUserProfilePicture = catchAsync(async (req, res) => {
   });
 });
 
+const getUsersForAdmin = catchAsync(async (req, res) => {
+  const { role = '', search = '', limit = 10, page = 1 } = req.body;
+  const filters: { role?: string; search?: string } = {};
+
+  // Apply filters only if values are provided
+  if (role) filters.role = role;
+  if (search) filters.search = search;
+
+  const { pagination, users } = await UserService.getUsersForAdmin(
+    filters,
+    +limit,
+    +page,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Users retrieved successfully for admin',
+    data: { users, pagination },
+  });
+});
+
+const updateUserStatus = catchAsync(async (req, res) => {
+  const { userId, status, isBlacklisted } = req.body;
+
+  const user = await UserService.updateUserStatus(
+    userId,
+    status,
+    isBlacklisted,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User updated successfully',
+    data: user,
+  });
+});
+
 export const UserController = {
   getCurrentUser,
   getAllUsers,
   updateUserData,
+  getUsersForAdmin,
   updateUserProfilePicture,
   getSingleUser,
   updateUserByAdmin,
+  updateUserStatus,
 };

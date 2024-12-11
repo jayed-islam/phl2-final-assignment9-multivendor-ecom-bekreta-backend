@@ -4,6 +4,8 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { IUser } from './user.interface';
 import { User } from './user.model';
+import mongoose from 'mongoose';
+import { Vendor } from '../vendor/vendor.model';
 
 const updateUserDataIntoDB = async (
   userId: string,
@@ -105,13 +107,118 @@ const getUserProfile = async (userId: string) => {
     .sort({ createdAt: -1 })
     .exec();
 
-  console.log('user', user);
-
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found.');
   }
 
   return user;
+};
+const getUsersForAdmin = async (
+  filters: { role?: string; search?: string },
+  limit = 10,
+  page = 1,
+) => {
+  const query: any = {};
+
+  if (filters.role) {
+    query.role = filters.role;
+  }
+  if (filters.search) {
+    // Check if the search value is a valid ObjectId
+    if (mongoose.Types.ObjectId.isValid(filters.search)) {
+      // If it's a valid ObjectId, query by _id
+      query.$or = [{ _id: filters.search }];
+    } else {
+      // Otherwise, search by name
+      query.$or = [{ name: { $regex: filters.search, $options: 'i' } }];
+    }
+  }
+
+  const skip = (page - 1) * limit;
+
+  const users = await User.find(query)
+    .populate({
+      path: 'vendor',
+      match: filters.role === 'vendor' ? {} : null,
+    })
+    .skip(skip)
+    .limit(limit)
+    .select('-password')
+    .exec();
+
+  const totalItems = await User.countDocuments(query);
+  const totalPages = Math.ceil(totalItems / limit);
+  const pagination = {
+    totalItems,
+    totalPages,
+    currentPage: page,
+    itemsPerPage: limit,
+  };
+
+  return { users, pagination };
+};
+
+// const updateUserStatus = async (
+//   userId: string,
+//   status: string,
+//   isBlacklisted: boolean,
+// ) => {
+//   try {
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return AppError(httpStatus.NOT_FOUND, 'User not found');
+//     }
+
+//     user.status = status;
+//     if (user.role === 'vendor') {
+//       user.isBlocklisted = isBlocklisted;
+//     }
+
+//     await user.save();
+
+//     return res
+//       .status(200)
+//       .json({ success: true, message: 'User status updated successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ success: false, message: 'Server error' });
+//   }
+// };
+
+const updateUserStatus = async (
+  userId: string,
+  status: string,
+  isBlacklisted: boolean,
+) => {
+  const existingUser = await User.findById(userId);
+
+  if (!existingUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User Not Found');
+  }
+
+  if (existingUser.role === 'customer') {
+    // If the role is 'customer', update the status directly
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { status },
+      { new: true },
+    );
+    return updatedUser;
+  } else if (existingUser.role === 'vendor') {
+    const vendor = await Vendor.findById(existingUser.vendor);
+
+    if (!vendor) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Vendor Not Found');
+    }
+
+    vendor.isBlacklisted = isBlacklisted;
+    await vendor.save();
+
+    return vendor;
+  } else {
+    return null;
+  }
 };
 
 export const UserService = {
@@ -120,4 +227,6 @@ export const UserService = {
   updateUserDataIntoDB,
   updateUserProfilePicture,
   updateUserByAdmin,
+  getUsersForAdmin,
+  updateUserStatus,
 };

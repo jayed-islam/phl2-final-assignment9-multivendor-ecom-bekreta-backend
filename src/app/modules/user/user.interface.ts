@@ -10,7 +10,7 @@ export interface IUser {
   phone?: string;
   address?: string;
   profilePicture?: string;
-  role: 'admin' | 'customer' | 'seller';
+  role: 'admin' | 'customer' | 'vendor';
   status: 'active' | 'diactive' | 'blocked';
   isDeleted: boolean;
   followedVendors: Types.ObjectId[];

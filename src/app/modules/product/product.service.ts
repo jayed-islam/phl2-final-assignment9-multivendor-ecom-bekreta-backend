@@ -177,8 +177,8 @@ const getProductListForAdmin = async (
   vendorId: string,
 ) => {
   const query: Record<string, unknown> = {
-    isDeleted: false,
     ...(vendorId && { vendor: new mongoose.Types.ObjectId(vendorId) }),
+    ...(vendorId && { isDeleted: false }),
   };
 
   // Filter by category
@@ -301,6 +301,7 @@ const updateProduct = async (id: string, productData: Partial<IProduct>) => {
   //     throw new AppError(httpStatus.FORBIDDEN, 'You are not authorized');
   //   }
   // }
+  console.log('ddd', productData);
   const product = await Product.findByIdAndUpdate(id, productData, {
     new: true,
     runValidators: true,

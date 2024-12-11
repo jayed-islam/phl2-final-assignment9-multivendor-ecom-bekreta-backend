@@ -24,6 +24,12 @@ router.put(
   UserController.updateUserData,
 );
 
+router.post(
+  '/get-list',
+  auth(USER_ROLE.admin),
+  UserController.getUsersForAdmin,
+);
+
 router.put(
   '/admin/update/:id',
   auth(USER_ROLE.admin),
@@ -35,6 +41,12 @@ router.put(
   auth(USER_ROLE.admin, USER_ROLE.customer, USER_ROLE.vendor),
   multerUpload.single('file'),
   UserController.updateUserProfilePicture,
+);
+
+router.put(
+  '/update-status',
+  auth(USER_ROLE.admin),
+  UserController.updateUserStatus,
 );
 
 router.get('/get-list', auth(USER_ROLE.admin), UserController.getAllUsers);
