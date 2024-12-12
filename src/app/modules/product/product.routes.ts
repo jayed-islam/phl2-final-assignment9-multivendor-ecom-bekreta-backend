@@ -71,4 +71,6 @@ router.put(
   ProductController.makeDuplicate,
 );
 
+router.get('/all-products', ProductController.getAllProducts);
+
 export const ProductRoutes = router;

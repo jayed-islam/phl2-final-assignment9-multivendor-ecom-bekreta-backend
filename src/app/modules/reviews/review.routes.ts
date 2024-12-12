@@ -33,7 +33,7 @@ router.post(
 
 router.get('/', ReviewControllers.getAllReviewsByProductId);
 
-router.delete('/:id', auth(), ReviewControllers.deleteReview);
+router.delete('/:id', auth(USER_ROLE.admin), ReviewControllers.deleteReview);
 
 router.get(
   '/vendor-reviews/:id',

@@ -47,9 +47,25 @@ const getPaymentList = catchAsync(async (req, res) => {
   });
 });
 
+const updatePaymentStatus = catchAsync(async (req, res) => {
+  const { transactionId, newStatus } = req.body;
+  const result = await PaymentService.updatePaymentStatus(
+    transactionId,
+    newStatus,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Payment updated',
+    data: result,
+  });
+});
+
 export const PaymentController = {
   ConfirmPayment,
   MakePayemnt,
   FailPayment,
   getPaymentList,
+  updatePaymentStatus,
 };

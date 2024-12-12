@@ -137,30 +137,59 @@ const makePayment = async (
   }
 };
 
-const getAllPayments = async (page = 1, limit = 10, filter = {}, sort = {}) => {
+const getAllPayments = async () => {
   try {
-    const skip = (page - 1) * limit;
-
-    const payments = await Payment.find(filter)
+    const payments = await Payment.find()
       .populate('user', '-password')
       .populate('vendor', 'name')
-      .populate('order')
-      .sort(sort)
-      .skip(skip)
-      .limit(limit);
+      .populate('order');
 
-    const total = await Payment.countDocuments(filter);
-
-    return {
-      payments,
-      total,
-      page,
-      limit,
-    };
+    return payments;
   } catch (error) {
     throw new AppError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Error fetching payments',
+    );
+  }
+};
+
+const updatePaymentStatus = async (
+  transactionId: string,
+  newStatus: 'PENDING' | 'COMPLETED' | 'FAILED',
+) => {
+  const validStatuses = ['PENDING', 'COMPLETED', 'FAILED'];
+
+  if (!validStatuses.includes(newStatus)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid payment status');
+  }
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const updatedPayment = await Payment.findOneAndUpdate(
+      { transactionId },
+      { paymentStatus: newStatus },
+      { new: true, session },
+    );
+
+    if (!updatedPayment) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Payment record not found');
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return updatedPayment;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw new AppError(
+      httpStatus.CONFLICT,
+      error instanceof Error
+        ? error.message
+        : 'Failed to update payment status',
     );
   }
 };
@@ -171,4 +200,5 @@ export const PaymentService = {
   makePayment,
   PaymentFailure,
   getAllPayments,
+  updatePaymentStatus,
 };

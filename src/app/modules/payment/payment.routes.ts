@@ -24,4 +24,10 @@ router.get(
   PaymentController.getPaymentList,
 );
 
+router.put(
+  '/update-status',
+  auth(USER_ROLE.admin),
+  PaymentController.updatePaymentStatus,
+);
+
 export const PaymentRoutes = router;

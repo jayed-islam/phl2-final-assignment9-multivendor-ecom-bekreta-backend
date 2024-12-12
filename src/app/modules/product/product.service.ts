@@ -318,6 +318,16 @@ const softDeleteProduct = async (id: string) => {
   return product;
 };
 
+const getAllProducts = async () => {
+  const products = await Product.find({
+    isDeleted: false,
+    isPublished: true,
+  })
+    .populate('category')
+    .populate('vendor');
+  return products;
+};
+
 const duplicateProduct = async (id: string) => {
   try {
     const existingProduct = await Product.findById(id);
@@ -357,4 +367,5 @@ export const ProductServices = {
   getProductListForAdmin,
   duplicateProduct,
   getFlashSaleProductsFromDB,
+  getAllProducts,
 };

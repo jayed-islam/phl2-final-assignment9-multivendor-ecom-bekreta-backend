@@ -84,12 +84,17 @@ const getAllVendorReviews = async (vendorId: string): Promise<IReview[]> => {
   return reviews;
 };
 
-const deleteReview = async (reviewId: string): Promise<void> => {
-  const review = await Review.findByIdAndDelete(reviewId);
+const deleteReview = async (reviewId: string) => {
+  const review = await Review.findByIdAndUpdate(
+    reviewId,
+    { isDeleted: true },
+    { new: true },
+  );
 
   if (!review) {
     throw new AppError(httpStatus.NOT_FOUND, 'Review not found');
   }
+  return review;
 };
 
 const getAllReviewsForAdmin = async (): Promise<IReview[]> => {

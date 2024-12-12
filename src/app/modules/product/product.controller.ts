@@ -161,6 +161,17 @@ const makeDuplicate = catchAsync(async (req, res) => {
   });
 });
 
+const getAllProducts = catchAsync(async (req, res) => {
+  const products = await ProductServices.getAllProducts();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Product retrived Successfully!',
+    data: products,
+  });
+});
+
 export const ProductController = {
   createProduct,
   getProductList,
@@ -171,4 +182,5 @@ export const ProductController = {
   getProductListForAdmin,
   makeDuplicate,
   getFlashSaleProducts,
+  getAllProducts,
 };
