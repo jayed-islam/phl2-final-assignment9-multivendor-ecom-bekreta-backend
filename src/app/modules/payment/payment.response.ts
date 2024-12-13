@@ -60,7 +60,7 @@ export const htmlPaymentSuccessContent = `
       <p>Your payment has been successfully processed. Your order is now being prepared for shipment.</p>
       <p>Order details and tracking information can be found under "My Orders" in your account.</p>
       <p>If you have any questions about your order, feel free to contact our support team.</p>
-      <a href="https://yourwebsite.com/orders" target="_blank" class="btn-home">View My Orders</a>
+      <a href="https://test-bekreta.vercel.app/account/orders" target="_blank" class="btn-home">View My Orders</a>
     </div>
   </div>
 </body>
@@ -128,7 +128,7 @@ export const htmlPaymentFailContent = `
       <h2>Oops! Your payment was not successful.</h2>
       <p>Unfortunately, your payment could not be processed. Please try again or use a different payment method.</p>
       <p>If you need help, feel free to contact our support team.</p>
-      <a href="https://yourwebsite.com/support" target="_blank" class="btn-home">Contact Support</a>
+      <a href="https://test-bekreta.vercel.app" target="_blank" class="btn-home">Go home</a>
     </div>
   </div>
 </body>
