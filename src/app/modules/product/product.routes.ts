@@ -72,5 +72,6 @@ router.put(
 );
 
 router.get('/all-products', ProductController.getAllProducts);
+router.get('/get-home-data', ProductController.getHomeData);
 
 export const ProductRoutes = router;

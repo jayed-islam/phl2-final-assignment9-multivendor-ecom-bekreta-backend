@@ -172,6 +172,17 @@ const getAllProducts = catchAsync(async (req, res) => {
   });
 });
 
+const getHomeData = catchAsync(async (req, res) => {
+  const products = await ProductServices.getHomeData();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Home data retrived Successfully!',
+    data: products,
+  });
+});
+
 export const ProductController = {
   createProduct,
   getProductList,
@@ -183,4 +194,5 @@ export const ProductController = {
   makeDuplicate,
   getFlashSaleProducts,
   getAllProducts,
+  getHomeData,
 };

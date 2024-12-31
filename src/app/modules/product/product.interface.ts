@@ -13,7 +13,15 @@ export interface IProduct extends Document {
   isDeleted: boolean;
   discount?: number;
   rating: number;
+  salesCount: number;
   vendor: Types.ObjectId;
   isOnSale: boolean;
   isPublished: boolean;
+  status: ProductStatus;
 }
+
+export type ProductStatus =
+  | 'OFFERED'
+  | 'NEW_ARRIVAL'
+  | 'BEST_SELLER'
+  | 'NORMAL';

@@ -51,6 +51,11 @@ const productSchema = new Schema<IProduct>(
       min: 0,
       default: 0,
     },
+    salesCount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
     vendor: {
       type: Schema.Types.ObjectId,
       ref: 'Vendor',
@@ -71,6 +76,11 @@ const productSchema = new Schema<IProduct>(
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    status: {
+      type: String,
+      enum: ['OFFERED', 'NEW_ARRIVAL', 'BEST_SELLER', 'NORMAL'],
+      default: 'NORMAL',
     },
   },
   {

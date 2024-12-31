@@ -357,6 +357,61 @@ const duplicateProduct = async (id: string) => {
   }
 };
 
+const getHomeData = async () => {
+  const bestSellingProductPromise = Product.find({ isDeleted: false })
+    .sort({ salesCount: -1 })
+    .limit(6)
+    .populate('category', 'name slug image')
+    .exec();
+
+  const flashSaleProductsPromise = Product.find({
+    isOnSale: true,
+    isDeleted: false,
+  })
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .populate('category', 'name slug image')
+    .exec();
+
+  const offerProductsPromise = Product.find({
+    status: 'OFFERED',
+    isDeleted: false,
+  })
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .populate('category', 'name slug image')
+    .exec();
+
+  const newArrivalProductsPromise = Product.find({
+    status: 'NEW_ARRIVAL',
+    isDeleted: false,
+  })
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .populate('category', 'name slug image')
+    .exec();
+
+  // Resolve all promises in parallel
+  const [
+    bestSellingProduct,
+    flashSaleProducts,
+    offerProducts,
+    newArrivalProducts,
+  ] = await Promise.all([
+    bestSellingProductPromise,
+    flashSaleProductsPromise,
+    offerProductsPromise,
+    newArrivalProductsPromise,
+  ]);
+
+  return {
+    flashSaleProducts,
+    bestSellingProduct,
+    offerProducts,
+    newArrivalProducts,
+  };
+};
+
 export const ProductServices = {
   createProduct,
   getProductsByCategoryIntoDB,
@@ -368,4 +423,5 @@ export const ProductServices = {
   duplicateProduct,
   getFlashSaleProductsFromDB,
   getAllProducts,
+  getHomeData,
 };
