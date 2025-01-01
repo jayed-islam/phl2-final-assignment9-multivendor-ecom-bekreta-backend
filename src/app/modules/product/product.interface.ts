@@ -24,4 +24,6 @@ export type ProductStatus =
   | 'OFFERED'
   | 'NEW_ARRIVAL'
   | 'BEST_SELLER'
-  | 'NORMAL';
+  | 'NORMAL'
+  | 'IN_STOCK'
+  | 'OUT_OF_STOCK';

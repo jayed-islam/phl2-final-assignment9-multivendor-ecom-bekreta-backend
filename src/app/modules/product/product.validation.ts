@@ -67,6 +67,8 @@ const getProductListValidation = z.object({
     minPrice: z.number().optional().default(0),
     maxPrice: z.number().optional().default(Number.MAX_SAFE_INTEGER),
     userId: z.string().optional(),
+    ratings: z.array(z.string()).optional(),
+    status: z.array(z.string()).optional(),
   }),
 });
 

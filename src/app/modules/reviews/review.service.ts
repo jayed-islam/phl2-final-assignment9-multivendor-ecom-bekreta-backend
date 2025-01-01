@@ -114,6 +114,32 @@ const getAllReviewsForAdmin = async (): Promise<IReview[]> => {
 
   return reviews;
 };
+const getAllReviewsByCustomerId = async (
+  customerId: string,
+): Promise<IReview[]> => {
+  if (!customerId) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Customer ID is required');
+  }
+
+  const reviews = await Review.find({ customer: customerId })
+    .populate({
+      path: 'product',
+      select: 'name price',
+    })
+    .populate({
+      path: 'vendor',
+      select: 'shopName logo',
+    });
+
+  if (!reviews.length) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'No reviews found for this customer',
+    );
+  }
+
+  return reviews;
+};
 
 export const ReviewServices = {
   createReview,
@@ -121,4 +147,5 @@ export const ReviewServices = {
   deleteReview,
   getAllVendorReviews,
   getAllReviewsForAdmin,
+  getAllReviewsByCustomerId,
 };

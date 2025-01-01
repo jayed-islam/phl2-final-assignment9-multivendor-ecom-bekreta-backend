@@ -29,6 +29,8 @@ const getProductList = catchAsync(async (req, res) => {
     maxPrice = Number.MAX_SAFE_INTEGER,
     isLowestFirst,
     userId,
+    status,
+    ratings,
   } = req.body;
 
   const { products, pagination } = await ProductServices.getProductList(
@@ -40,6 +42,8 @@ const getProductList = catchAsync(async (req, res) => {
     Number(maxPrice),
     isLowestFirst,
     userId,
+    ratings,
+    status,
   );
 
   sendResponse(res, {

@@ -44,7 +44,7 @@ const createVendor = async (
 };
 
 const getAllVendors = async (): Promise<IVendor[]> => {
-  return Vendor.find();
+  return Vendor.find({ isBlacklisted: false });
 };
 
 const getVendorById = async (vendorId: string): Promise<IVendor | null> => {

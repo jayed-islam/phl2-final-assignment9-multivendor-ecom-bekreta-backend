@@ -47,4 +47,10 @@ router.get(
   ReviewControllers.getAllReviewsForAdmin,
 );
 
+router.get(
+  '/my-reviews',
+  auth(USER_ROLE.customer),
+  ReviewControllers.getAllReviewsByCustomerId,
+);
+
 export const ReviewRoutes = router;

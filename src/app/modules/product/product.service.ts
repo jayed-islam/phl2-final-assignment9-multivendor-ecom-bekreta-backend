@@ -84,6 +84,8 @@ export const getProductList = async (
   maxPrice: number = Number.MAX_SAFE_INTEGER,
   isLowestFirst?: boolean,
   userId?: string,
+  ratings?: string[],
+  status?: string[],
 ) => {
   // Build the base query
   const query: Record<string, unknown> = {
@@ -99,6 +101,14 @@ export const getProductList = async (
   if (searchTerm) {
     const searchRegex = new RegExp(searchTerm, 'i');
     query.$or = [{ name: searchRegex }, { description: searchRegex }];
+  }
+
+  if (ratings && ratings.length > 0) {
+    query.rating = { $in: ratings.map((rating) => Number(rating)) };
+  }
+
+  if (status && status.length > 0) {
+    query.status = { $in: status };
   }
 
   // Get followed vendors if userId is provided

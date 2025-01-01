@@ -45,6 +45,21 @@ const getVendorReviews = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllReviewsByCustomerId = catchAsync(
+  async (req: Request, res: Response) => {
+    const { customerId } = req.body;
+
+    const reviews = await ReviewServices.getAllReviewsByCustomerId(customerId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Customer reviews retrieved successfully!',
+      data: reviews,
+    });
+  },
+);
+
 const deleteReview = catchAsync(async (req: Request, res: Response) => {
   const reviewId = req.params.id;
 
@@ -77,4 +92,5 @@ export const ReviewControllers = {
   deleteReview,
   getVendorReviews,
   getAllReviewsForAdmin,
+  getAllReviewsByCustomerId,
 };
