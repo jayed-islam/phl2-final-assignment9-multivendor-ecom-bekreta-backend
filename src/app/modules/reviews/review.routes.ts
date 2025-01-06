@@ -47,7 +47,7 @@ router.get(
   ReviewControllers.getAllReviewsForAdmin,
 );
 
-router.get(
+router.post(
   '/my-reviews',
   auth(USER_ROLE.customer),
   ReviewControllers.getAllReviewsByCustomerId,

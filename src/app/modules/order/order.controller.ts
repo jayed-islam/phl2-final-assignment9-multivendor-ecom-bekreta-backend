@@ -134,6 +134,18 @@ const orderSummary = catchAsync(async (req, res) => {
   });
 });
 
+const geSummary = catchAsync(async (req, res) => {
+  const { vendorId } = req.body;
+  const result = await OrderServices.getSummary(vendorId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Summary reterieved Successfully!',
+    data: result,
+  });
+});
+
 export const OrderController = {
   createOrder,
   getAllOrdersForAdmin,
@@ -143,4 +155,5 @@ export const OrderController = {
   getOrdersForUser,
   updateOrderStatus,
   orderSummary,
+  geSummary,
 };

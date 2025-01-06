@@ -36,7 +36,7 @@ const PaymentConfirmation = async (transactionId: string) => {
 
       const orderUpdate = await Order.findByIdAndUpdate(
         orderId,
-        { payment: payment._id },
+        { payment: payment._id, paymentStatus: 'paid' },
         { new: true, session },
       );
 

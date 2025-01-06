@@ -20,6 +20,12 @@ router.post(
 );
 
 router.post(
+  '/get-summary',
+  auth(USER_ROLE.admin, USER_ROLE.vendor),
+  OrderController.geSummary,
+);
+
+router.post(
   '/get-order-list',
   auth(USER_ROLE.admin, USER_ROLE.vendor),
   OrderController.getAllOrdersForAdmin,

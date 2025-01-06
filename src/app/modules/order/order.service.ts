@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SortOrder, startSession } from 'mongoose';
+import mongoose, { SortOrder, startSession } from 'mongoose';
 import { IOrder } from './order.interface';
 import { Product } from '../product/product.model';
 import AppError from '../../errors/AppError';
@@ -8,6 +8,7 @@ import httpStatus from 'http-status';
 import { startOfToday, subDays } from 'date-fns';
 import { Order } from './order.model';
 import { PaymentService } from '../payment/payment.service';
+import { Category } from '../category/category.model';
 
 const createOrder = async (orderData: IOrder) => {
   const session = await startSession();
@@ -396,6 +397,137 @@ const getOrderSummaryForAdmin = async () => {
   }
 };
 
+const getSummary = async (vendor?: string) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const today = new Date();
+    const lastWeekStart = new Date(today);
+    lastWeekStart.setDate(today.getDate() - 7);
+
+    // Fetch last week's orders (paginated)
+    const lastWeekOrders = await Order.find({
+      ...(vendor && { vendor }),
+      createdAt: { $gte: lastWeekStart, $lt: today },
+    })
+      .sort({ createdAt: -1 })
+      .limit(15)
+      .session(session);
+
+    // Revenue in the last week
+    const lastWeekRevenue = await Order.aggregate([
+      {
+        $match: {
+          ...(vendor && { vendor }), // Add vendor filter if provided
+          paymentStatus: 'paid',
+          createdAt: {
+            $gte: lastWeekStart,
+            $lt: today,
+          },
+        },
+      },
+      {
+        $group: { _id: null, total: { $sum: '$totalPrice' } },
+      },
+    ]).session(session);
+
+    // Total products count
+    const productsCount = await Product.countDocuments({
+      ...(vendor && { vendor }), // Add vendor filter if provided
+    }).session(session);
+
+    // Weekly sales data
+    const salesOverviewRaw = await Order.aggregate([
+      {
+        $match: {
+          ...(vendor && { vendor }), // Add vendor filter if provided
+          createdAt: {
+            $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: '$createdAt' },
+          totalSales: { $sum: '$totalPrice' },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]).session(session);
+
+    const salesOverview = Array.from({ length: 7 }, (_, i) => {
+      const day = i + 1; // Day of week (1=Sunday, 7=Saturday)
+      const data = salesOverviewRaw.find((item: any) => item._id === day);
+      return {
+        day,
+        totalSales: data ? data.totalSales : 0,
+      };
+    });
+
+    // Category distribution
+    const categoryDistributionRaw = await Product.aggregate([
+      {
+        $match: {
+          ...(vendor && { vendor }), // Add vendor filter if provided
+        },
+      },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+        },
+      },
+    ]).session(session);
+
+    const categories = await Category.find({
+      _id: { $in: categoryDistributionRaw.map((item: any) => item._id) },
+    }).session(session);
+
+    const categoryDistribution = categoryDistributionRaw.map((item: any) => {
+      const category = categories.find(
+        (cat: any) => cat._id.toString() === item._id.toString(),
+      );
+      return {
+        category: category ? category.name : 'Unknown',
+        count: item.count,
+      };
+    });
+
+    // Prepare summary and chart data
+    const summary = {
+      orders: lastWeekOrders.length,
+      revenue: lastWeekRevenue[0]?.total || 0,
+      products: productsCount,
+    };
+
+    const chartData = {
+      salesOverview,
+      categoryDistribution,
+    };
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      summary,
+      chartData,
+      lastWeekOrders,
+    };
+  } catch (error: any) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error(error);
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to retrieve order summary',
+    );
+  }
+};
+
 export const OrderServices = {
   createOrder,
   getAllOrdersForAdmin,
@@ -405,4 +537,5 @@ export const OrderServices = {
   getOrdersByUserId,
   updateOrderStatus,
   getOrderSummaryForAdmin,
+  getSummary,
 };
